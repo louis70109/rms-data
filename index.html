@@ -43,6 +43,15 @@ a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
 .grp{display:flex;justify-content:space-between;align-items:center;margin:14px 8px 5px;
  font-size:11px;letter-spacing:1.5px;color:var(--sidemut);text-transform:uppercase}
 .grp .c{background:var(--sidehover);border-radius:20px;padding:1px 8px;font-size:10px}
+button.grp{width:100%;background:none;border:0;border-radius:8px;color:var(--sidemut);font:inherit;cursor:pointer;
+ text-align:left;display:flex;align-items:center;gap:6px;padding:6px 8px;margin:12px 0 2px;letter-spacing:1.5px;font-size:11px;text-transform:uppercase}
+button.grp:hover{background:var(--sidehover);color:var(--sideink)}
+button.grp:focus-visible{outline:2px solid var(--brand);outline-offset:1px}
+.grp .gn{flex:1;min-width:0}
+.grp .caret{display:inline-block;font-size:10px;transition:transform .18s ease;width:10px;text-align:center}
+.grpbox.closed .caret{transform:rotate(-90deg)}
+.grpbody{overflow:hidden;transition:max-height .22s ease;max-height:2000px}
+.grpbox.closed .grpbody{max-height:0}
 .navlink{display:flex;justify-content:space-between;gap:8px;align-items:baseline;
  padding:9px 12px;border-radius:9px;color:var(--sideink);cursor:pointer;font-size:14.5px}
 .navlink:hover{background:var(--sidehover);text-decoration:none}
@@ -280,11 +289,21 @@ function cats(g){return ORDER.filter(c=>g[c]).concat(Object.keys(g).filter(c=>!O
 const GA=groupsAll(),flat=[];cats(GA).forEach(c=>GA[c].forEach(d=>flat.push(d)));
 function renderNav(f=''){const g=groups(f);nav.innerHTML='';
  if(!cats(g).length){nav.innerHTML='<p class="grp">查無結果</p>';return;}
- cats(g).forEach(c=>{const h=document.createElement('div');h.className='grp';
-  h.innerHTML='<span>'+c+'</span><span class="c">'+g[c].length+'</span>';nav.appendChild(h);
+ let sv={};try{sv=JSON.parse(localStorage.getItem('rms_grp')||'{}')}catch(e){}
+ cats(g).forEach(c=>{
+  const closed=!f&&!!sv[c];
+  const box=document.createElement('section');box.className='grpbox'+(closed?' closed':'');
+  const h=document.createElement('button');h.type='button';h.className='grp';h.setAttribute('aria-expanded',String(!closed));
+  h.innerHTML='<span class="caret">▾</span><span class="gn">'+c+'</span><span class="c">'+g[c].length+'</span>';
+  h.onclick=()=>{const nowClosed=box.classList.toggle('closed');h.setAttribute('aria-expanded',String(!nowClosed));
+   let st={};try{st=JSON.parse(localStorage.getItem('rms_grp')||'{}')}catch(e){}st[c]=nowClosed;
+   try{localStorage.setItem('rms_grp',JSON.stringify(st))}catch(e){}};
+  box.appendChild(h);
+  const body=document.createElement('div');body.className='grpbody';
   g[c].forEach(d=>{const a=document.createElement('a');a.className='navlink';a.href='#'+d.slug;
    a.innerHTML='<span>'+d.title+'</span><span class="d">'+d.ts+'</span>';
-   if(location.hash.slice(1)===d.slug)a.classList.add('active');nav.appendChild(a);});});}
+   if(location.hash.slice(1)===d.slug)a.classList.add('active');body.appendChild(a);});
+  box.appendChild(body);nav.appendChild(box);});}
 function home(){const g=groups();let h='<div class="home-hero"><h1>MapleRoyals 攻略庫</h1>'+
  '<p>原站 mapleroyals.net 已關站，以下為自網際網路檔案館救回的公開攻略，共 '+DATA.length+' 篇。左側點選或搜尋。</p></div><div class="cards">';
  cats(g).forEach(c=>{h+='<div class="card"><h2><span>'+c+'</span><span class="c">'+g[c].length+' 篇</span></h2>'+
