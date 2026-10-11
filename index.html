@@ -6,7 +6,7 @@
 <meta name="googlebot" content="noindex, nofollow">
 <title>RMS 攻略庫 · MapleRoyals</title>
 <style>
-:root{--bg:#f3f5fa;--panel:#fff;--ink:#242a35;--soft:#434a59;--muted:#808997;
+:root{--sw:280px;--bg:#f3f5fa;--panel:#fff;--ink:#242a35;--soft:#434a59;--muted:#808997;
  --brand:#e8632a;--brand2:#f4a62a;--line:#e6e9f0;--link:#c2541f;--mark:#ffe9d6;
  --side:#20242e;--sideink:#e8ebf2;--sidemut:#8a93a4;--sidehover:#2d323f;--card:#fbfcfe;
  --shadow:0 1px 3px rgba(20,25,40,.06),0 8px 24px rgba(20,25,40,.05);}
@@ -23,10 +23,17 @@ body{background:var(--bg);color:var(--ink);display:flex;min-height:100vh;
  text-rendering:optimizeLegibility}
 a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
 
-#side{width:280px;flex:none;background:var(--side);color:var(--sideink);
- display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
-#brand{padding:22px 18px 16px;background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;cursor:pointer}
+#side{width:var(--sw);flex:none;background:var(--side);color:var(--sideink);
+ display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;
+ transition:margin-left .22s ease}
+#brand{padding:22px 18px 16px;background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;cursor:pointer;
+ display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
 #brand h1{margin:0;font-size:20px;letter-spacing:.5px}
+#collapse{display:none;background:rgba(255,255,255,.2);border:0;color:#fff;cursor:pointer;
+ width:28px;height:28px;border-radius:8px;font-size:16px;line-height:1;flex:none}
+#collapse:hover{background:rgba(255,255,255,.32)}
+#reopen{display:none;position:fixed;left:14px;top:14px;z-index:16;width:40px;height:40px;border-radius:10px;
+ background:var(--brand);color:#fff;border:0;font-size:19px;cursor:pointer;box-shadow:var(--shadow)}
 #brand p{margin:5px 0 0;font-size:11px;opacity:.92}
 #q{margin:12px;padding:10px 13px;border-radius:10px;border:1px solid transparent;
  background:var(--sidehover);color:var(--sideink);font-size:14px;outline:none}
@@ -126,7 +133,13 @@ details.spoiler>*:last-child{padding-bottom:12px}
 #lb img{max-width:96vw;max-height:92vh;border-radius:6px;box-shadow:0 10px 40px rgba(0,0,0,.6)}
 
 /* 平板：側欄變窄 */
-@media(max-width:1024px) and (min-width:821px){#side{width:240px}#content{padding:34px 26px 90px}}
+@media(max-width:1024px) and (min-width:821px){:root{--sw:240px}#content{padding:34px 26px 90px}}
+/* 桌機：側欄可收合 */
+@media(min-width:821px){
+ #collapse{display:inline-flex;align-items:center;justify-content:center}
+ body.collapsed #side{margin-left:calc(-1 * var(--sw))}
+ body.collapsed #reopen{display:block}
+}
 
 /* 手機／窄螢幕：側欄收為抽屜 */
 @media(max-width:820px){
@@ -153,7 +166,7 @@ details.spoiler>*:last-child{padding-bottom:12px}
 </style></head>
 <body>
 <aside id="side">
-  <div id="brand"><h1>RMS 攻略庫</h1><p>MapleRoyals · 自 Wayback Machine 備份</p></div>
+  <div id="brand"><div><h1>RMS 攻略庫</h1><p>MapleRoyals · 自 Wayback Machine 備份</p></div><button id="collapse" aria-label="收合側欄" title="收合側欄">«</button></div>
   <input id="q" placeholder="🔍 搜尋標題…（按 /）" autocomplete="off">
   <nav id="nav"></nav>
 </aside>
@@ -162,6 +175,7 @@ details.spoiler>*:last-child{padding-bottom:12px}
   <div id="bar"><button id="menu" aria-label="選單">☰</button><strong>RMS 攻略庫</strong></div>
   <article id="content"></article>
 </div>
+<button id="reopen" aria-label="展開側欄" title="展開側欄">☰</button>
 <button id="top" aria-label="回到頂部">↑</button>
 <div id="lb"><img alt=""></div>
 <script>
@@ -210,6 +224,11 @@ addEventListener('hashchange',route);q.addEventListener('input',()=>renderNav(q.
 document.getElementById('menu').onclick=()=>document.body.classList.toggle('open');
 document.getElementById('scrim').onclick=()=>document.body.classList.remove('open');
 document.getElementById('brand').onclick=()=>{location.hash='';};
+const cB=document.getElementById('collapse'),rB=document.getElementById('reopen');
+function setCollapsed(v){document.body.classList.toggle('collapsed',v);try{localStorage.setItem('rms_collapsed',v?'1':'0');}catch(e){}}
+cB.onclick=e=>{e.stopPropagation();setCollapsed(true);};
+rB.onclick=()=>setCollapsed(false);
+try{if(localStorage.getItem('rms_collapsed')==='1')document.body.classList.add('collapsed');}catch(e){}
 const topBtn=document.getElementById('top');
 addEventListener('scroll',()=>topBtn.classList.toggle('show',scrollY>400));
 topBtn.onclick=()=>scrollTo({top:0,behavior:'smooth'});
