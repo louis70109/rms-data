@@ -3,7 +3,7 @@
 MapleRoyals（mapleroyals.net）關站後，自網際網路檔案館（Wayback Machine）救回的公開攻略，
 整理成一個**單頁應用（SPA）**：側邊欄分類、即時搜尋、同頁切換，單一自包含 `index.html`。
 
-## 內容（34 篇）
+## 內容（36 篇）
 
 | 分類 | 篇目 |
 |------|------|
@@ -12,6 +12,7 @@ MapleRoyals（mapleroyals.net）關站後，自網際網路檔案館（Wayback M
 | 轉職 | 二轉 / 三轉 / 四轉流程 |
 | 技能書 | 全職業共通、劍士、法師、弓箭手、盜賊、海盜 |
 | 道具 | iTCG 裝備製作 |
+| 論壇攻略 | APQ Bonus 全箱攻略（Elie 地圖）、Comprehensive APQ Guide（2021 更新）— 原 royals.ms 論壇英文原文 |
 
 > 站內連結（含總覽頁、內文交叉引用）皆為站內跳轉；指向未收錄頁的外部連結一律新分頁開啟，不離開本站。
 
