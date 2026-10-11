@@ -1,0 +1,55 @@
+:root{
+  --bg:#f5f7fa; --card:#ffffff; --ink:#1f2430; --muted:#6b7280;
+  --brand:#e8632a; --brand2:#f4a62a; --line:#e5e8ef; --link:#c2541f;
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#12151c;--card:#1b2029;--ink:#e7ebf2;--muted:#9aa3b2;
+        --line:#2a3140;--link:#ffb27a;}
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  line-height:1.75;}
+a{color:var(--link);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* 首頁英雄區 */
+.hero{background:linear-gradient(135deg,var(--brand),var(--brand2));
+  color:#fff;padding:48px 20px 40px;text-align:center}
+.hero h1{margin:0 0 10px;font-size:clamp(26px,5vw,40px);letter-spacing:1px}
+.hero p{margin:0 auto;max-width:640px;opacity:.95;font-size:15px}
+
+/* 卡片網格 */
+.grid{max-width:960px;margin:28px auto;padding:0 16px;
+  display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;
+  padding:18px 20px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.card h2{margin:0 0 12px;font-size:18px;color:var(--brand);
+  border-bottom:2px solid var(--line);padding-bottom:8px}
+.card ul{list-style:none;margin:0;padding:0}
+.card li{display:flex;justify-content:space-between;align-items:baseline;
+  gap:10px;padding:7px 0;border-bottom:1px dashed var(--line)}
+.card li:last-child{border-bottom:0}
+.card .ts{color:var(--muted);font-size:12px;flex:none}
+
+/* 文章頁 */
+.topbar{position:sticky;top:0;z-index:5;background:var(--card);
+  border-bottom:1px solid var(--line);padding:12px 16px;
+  display:flex;align-items:center;gap:12px}
+.topbar .home{font-weight:600}
+.topbar .cat{color:var(--muted);font-size:13px}
+.article{max-width:820px;margin:0 auto;padding:24px 18px 60px}
+.article h1{font-size:clamp(22px,4vw,30px);margin:.2em 0 .4em}
+.article .src{font-size:13px;color:var(--muted);margin:0 0 20px;
+  padding-bottom:14px;border-bottom:1px solid var(--line)}
+.article img{max-width:100%;height:auto;border-radius:8px;margin:10px 0}
+.article table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14px;
+  display:block;overflow-x:auto}
+.article th,.article td{border:1px solid var(--line);padding:8px 10px;text-align:left}
+.article th{background:var(--line)}
+.article h2,.article h3{margin-top:1.4em}
+.article hr{border:0;border-top:1px solid var(--line);margin:24px 0}
+
+.pagefoot{max-width:820px;margin:0 auto;padding:22px 18px 40px;
+  color:var(--muted);font-size:12px;text-align:center;border-top:1px solid var(--line)}
