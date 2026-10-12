@@ -1,63 +1,42 @@
 # rms-data · MapleRoyals 攻略庫
 
-MapleRoyals（mapleroyals.net）關站後，自網際網路檔案館（Wayback Machine）救回的公開攻略，
-整理成一個**單頁應用（SPA）**：側邊欄分類、即時搜尋、同頁切換，單一自包含 `index.html`。
+MapleRoyals（mapleroyals.net）關站後，自網際網路檔案館（Wayback Machine）與 royals.ms 論壇救回的公開攻略，
+整理成一個**單頁應用（SPA）**：分類側邊欄（可收合）、搜尋、同頁切換、圖片放大。
 
-## 內容（36 篇）
+線上：https://rms-data.fly.dev/
+
+## 內容（40 篇）
 
 | 分類 | 篇目 |
 |------|------|
-| 規則 | 乖寶寶題庫（Safe Adventures 題庫） |
-| 前置任務（23） | 前置任務總覽；技能前置任務（戰士／法師／弓箭手／盜賊／海盜）；殘暴炎魔、炎魔忍耐替代、闇黑龍王、天皇蟾蜍、獅子王城、鐘王、樹王、船長、熊獅、妖僧、CWKPQ、艾靈森林(EPQ)、時間神殿、東京、LHC 圖騰交換、魔王巴洛谷(BPQ) 前置；結婚手冊 |
-| 轉職 | 二轉 / 三轉 / 四轉流程 |
+| 規則 | 乖寶寶題庫 |
+| 前置任務（24） | 總覽；技能前置（戰士／法師／弓箭手／盜賊／海盜）；殘暴炎魔、炎魔忍耐替代、闇黑龍王、天皇蟾蜍、獅子王城、鐘王、樹王、船長、熊獅、妖僧、CWKPQ、艾靈森林、時間神殿、東京、LHC 圖騰交換、魔王巴洛谷 前置；結婚手冊；寵物任務－騎寵任務 |
+| 轉職 | 二轉／三轉／四轉流程 |
 | 技能書 | 全職業共通、劍士、法師、弓箭手、盜賊、海盜 |
 | 道具 | iTCG 裝備製作 |
-| 論壇攻略 | APQ Bonus 全箱攻略（Elie 地圖）、Comprehensive APQ Guide（2021 更新）— 原 royals.ms 論壇英文原文 |
+| 論壇攻略 | APQ Bonus、APQ 完整攻略（中英對照）、區域 BOSS 一覽、轉職補充（New Source）、四轉技能補充 |
 
-> 站內連結（含總覽頁、內文交叉引用）皆為站內跳轉；指向未收錄頁的外部連結一律新分頁開啟，不離開本站。
+> 賺錢相關頁面已移除；密碼保護與標註「不公開」的文章未收錄。Wayback 沒有存檔的圖片已從頁面移除。
 
-> 賺錢相關頁面已移除。密碼保護與標註「不公開」的文章未收錄。
+## 在本機架起來看
 
-## 在本地架起來看
+**方法一（免安裝）**：直接雙擊 `index.html`（圖片在同資料夾的 `assets/`）。
 
-### 方法一：直接開檔（最簡單，免安裝）
-
-`index.html` 是自包含單檔，直接用瀏覽器開即可：
-
-- **Windows**：雙擊 `index.html`，或在 PowerShell 執行
-  ```powershell
-  start index.html
-  ```
-- **macOS**：`open index.html`　**Linux**：`xdg-open index.html`
-
-文字與版面完全離線；圖片來源指向 Wayback 存檔，顯示時需連網（載不到的會自動隱藏）。
-
-### 方法二：本地伺服器（網址形式瀏覽）
-
-需要用 `http://` 網址打開時（部分瀏覽器對 `file://` 較嚴格），任選一種：
-
+**方法二（本機伺服器）**：
 ```bash
-# Python 3（內建）
-python -m http.server 8000
-# 然後開 http://127.0.0.1:8000
-
-# 或 Node.js
-npx serve .
-
-# 或 VS Code 裝 "Live Server" 外掛，右鍵 index.html → Open with Live Server
+python -m http.server 8000     # 開 http://127.0.0.1:8000
+# 或 npx serve .
 ```
 
-## 取得這份資料
-
+## 取得與更新
 ```bash
 git clone git@github.com:louis70109/rms-data.git
-cd rms-data
-start index.html      # Windows；macOS 用 open、Linux 用 xdg-open
+cd rms-data && python -m http.server 8000
+# 更新：git pull
 ```
 
-更新到最新版：`git pull`
+## 部署（Fly.io）
+push 到 `main` 會由 GitHub Actions 自動部署（需要 `FLY_API_TOKEN` secret）。細節與維護說明見 [AGENTS.md](AGENTS.md)。
 
 ---
-
-內容版權屬原作者，本 repo 僅作個人備份存查。資料來源為各頁面的 Wayback Machine 存檔，
-每篇頂部附有原始存檔連結。
+內容版權屬原作者，本 repo 僅作個人備份存查。
