@@ -113,3 +113,8 @@ python -m http.server 8000     # 然後開 http://127.0.0.1:8000
 - 沒有程式碼簽章：Windows SmartScreen 會警告；免安裝版需要系統已有 WebView2。
 - 本機沒有 Rust 工具鏈，編譯只在 CI 進行；改 `src-tauri/` 後要靠 Actions 驗證。
 - 網站內容更新後，要重新推標籤才會有包含新內容的桌面版（內容是內嵌的）。
+
+## 價格 OCR 工具（站內「工具」分類）
+- 頁面 `#tool-price-ocr`：貼上遊戲 Item Search 截圖，讀出商品名稱與價格，標出最低價，第二低價 ≥ 2 倍時提醒。圖片只在瀏覽器處理。
+- 執行檔在 `assets/ocr/`（tesseract.js、worker、三個 LSTM 核心、`eng.traineddata.gz`，共約 14 MB，只在使用時下載、之後快取）。這些檔案由私人建置 repo 產生後複製過來，**不要手改**。
+- 桌面版會內嵌這些檔案；更新後要推新的 `desktop-v*` 標籤才會同步。
