@@ -97,4 +97,9 @@ python -m http.server 8000     # 然後開 http://127.0.0.1:8000
 - `/assets/` 目錄列表目前是開啟的（Python `http.server` 預設），這是已知缺口。
 
 ## 待辦
-PWA（manifest + Service Worker + 圖示）、關閉 `/assets/` 目錄列表。詳見私人 repo 的 AGENTS.md「待辦」。
+關閉 `/assets/` 目錄列表。詳見私人 repo 的 AGENTS.md「待辦」。
+
+## PWA（已完成）
+- `manifest.json`、`sw.js`、`assets-manifest.json` 由私人 repo 的 `build_spa.py` 產生，`assets/icons/` 為圖示；**Dockerfile 必須複製這三個檔案**（已設定）。
+- `sw.js` 的版本是內容雜湊，內容變動就會自動換新；殼網路優先、圖片快取優先，頁面載入後背景預先快取全部圖片（631 個）。
+- 若原地替換同名圖片，需調高 `sw.js` 範本內 `ASSET_CACHE` 版本（在私人 repo 的 `pwa/sw.template.js`）。
