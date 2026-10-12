@@ -36,8 +36,18 @@
     "win": {
       "icon": "build/icon.png",
       "target": [
-        { "target": "nsis", "arch": ["x64"] },
-        { "target": "portable", "arch": ["x64"] }
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
       ]
     },
     "nsis": {
@@ -47,20 +57,6 @@
     },
     "portable": {
       "artifactName": "RMS-Guide-Portable-${version}.${ext}"
-    },
-    "mac": {
-      "icon": "build/icon.png",
-      "category": "public.app-category.games",
-      "identity": null,
-      "target": [
-        { "target": "dmg", "arch": ["x64", "arm64"] }
-      ]
-    },
-    "linux": {
-      "icon": "build/icon.png",
-      "category": "Game",
-      "maintainer": "louis70109 <louis70109@gmail.com>",
-      "target": ["AppImage", "deb"]
     }
   }
 }

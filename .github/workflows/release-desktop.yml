@@ -1,27 +1,24 @@
 name: Release desktop app
 
-# 推一個 desktop-vX.Y.Z 標籤（例如 desktop-v1.0.0）就會在 Windows / macOS / Linux 打包，
-# 並建立同名 GitHub Release、附上安裝檔。也可以在 Actions 頁面手動執行並輸入版本號。
+# 推一個 desktop-vX.Y.Z 標籤（例如 desktop-v1.0.1）就會在 Windows 打包，
+# 並建立同名 GitHub Release、附上安裝檔（安裝版與免安裝版）。
+# 也可以在 Actions 頁面手動執行並輸入版本號。
 on:
   push:
     tags: ["desktop-v*"]
   workflow_dispatch:
     inputs:
       version:
-        description: "版本號（例如 1.0.0）"
+        description: "版本號（例如 1.0.1）"
         required: true
-        default: "1.0.0"
+        default: "1.0.1"
 
 permissions:
   contents: write
 
 jobs:
-  build:
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [windows-latest, macos-latest, ubuntu-latest]
-    runs-on: ${{ matrix.os }}
+  windows:
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
 
@@ -52,59 +49,31 @@ jobs:
         working-directory: desktop
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: "false"
-        run: npx electron-builder --publish never
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: desktop-${{ matrix.os }}
-          if-no-files-found: error
-          path: |
-            desktop/dist/*.exe
-            desktop/dist/*.dmg
-            desktop/dist/*.AppImage
-            desktop/dist/*.deb
-
-  release:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: 決定版本號
-        id: ver
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            V="${{ inputs.version }}"
-          else
-            V="${GITHUB_REF_NAME#desktop-v}"
-          fi
-          echo "version=$V" >> "$GITHUB_OUTPUT"
-
-      - uses: actions/download-artifact@v4
-        with:
-          path: artifacts
-          merge-multiple: true
+        run: npx electron-builder --win --publish never
 
       - name: 列出安裝檔
-        run: ls -la artifacts
+        shell: bash
+        run: ls -la desktop/dist/*.exe
 
       - uses: softprops/action-gh-release@v2
         with:
           tag_name: desktop-v${{ steps.ver.outputs.version }}
           name: RMS 攻略庫 桌面版 v${{ steps.ver.outputs.version }}
-          files: artifacts/*
+          files: |
+            desktop/dist/RMS-Guide-Setup-*.exe
+            desktop/dist/RMS-Guide-Portable-*.exe
+          fail_on_unmatched_files: true
           body: |
-            RMS 攻略庫 桌面版（離線閱讀）。內容與 https://rms-data.fly.dev/ 相同，安裝後不需要網路。
+            RMS 攻略庫 桌面版（Windows，離線閱讀）。內容與 https://rms-data.fly.dev/ 相同，安裝後不需要網路。
 
             ### 下載
-            | 系統 | 檔案 |
+            | 檔案 | 說明 |
             |---|---|
-            | Windows | `RMS-Guide-Setup-*.exe`（安裝版）／`RMS-Guide-Portable-*.exe`（免安裝） |
-            | macOS | `RMS-Guide-*-mac-*.dmg`（Apple 晶片選 arm64，Intel 選 x64） |
-            | Linux | `RMS-Guide-*.AppImage`／`*.deb` |
+            | `RMS-Guide-Setup-${{ steps.ver.outputs.version }}.exe` | 安裝版（可選安裝位置，建立開始功能表與桌面捷徑） |
+            | `RMS-Guide-Portable-${{ steps.ver.outputs.version }}.exe` | 免安裝版（直接雙擊執行，不寫入系統） |
 
-            ### 注意：這些安裝檔**沒有程式碼簽章**
-            - **Windows**：第一次執行可能出現 SmartScreen「未知的發行者」，點「其他資訊」→「仍要執行」。
-            - **macOS**：若顯示「已損毀」或無法開啟，在終端機執行
-              `xattr -cr "/Applications/RMS 攻略庫.app"`，或到「系統設定 → 隱私權與安全性」允許。
-            - **Linux AppImage**：`chmod +x RMS-Guide-*.AppImage` 後執行。
+            ### 注意：安裝檔**沒有程式碼簽章**
+            第一次執行時 Windows SmartScreen 可能出現「Windows 已保護你的電腦／未知的發行者」，
+            點「其他資訊」→「仍要執行」即可。
 
             內容版權屬原作者，本程式僅作個人備份存查。
