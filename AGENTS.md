@@ -103,3 +103,13 @@ python -m http.server 8000     # 然後開 http://127.0.0.1:8000
 - `manifest.json`、`sw.js`、`assets-manifest.json` 由私人 repo 的 `build_spa.py` 產生，`assets/icons/` 為圖示；**Dockerfile 必須複製這三個檔案**（已設定）。
 - `sw.js` 的版本是內容雜湊，內容變動就會自動換新；殼網路優先、圖片快取優先，頁面載入後背景預先快取全部圖片（631 個）。
 - 若原地替換同名圖片，需調高 `sw.js` 範本內 `ASSET_CACHE` 版本（在私人 repo 的 `pwa/sw.template.js`）。
+
+## 桌面版（Windows，Tauri）
+- 位置：`desktop/`。用 **Tauri v2**（Rust 外殼 + Windows 內建 WebView2）把 `index.html` + `assets/` 包成程式，**不用 Electron**（使用者嫌太肥；Electron 版約 87 MB，Tauri 版約 10–12 MB）。
+- 只打包 **Windows**（使用者指定）。產出：安裝版（NSIS，`currentUser` 安裝）與免安裝版（直接用編譯出的 `rms-guide.exe`）。
+- 發佈：推標籤 `desktop-vX.Y.Z`（或在 Actions 手動執行並輸入版本）→ `.github/workflows/release-desktop.yml` 在 `windows-latest` 用 Rust + Node 打包，建立 Release 並附上 `RMS-Guide-Setup-X.Y.Z.exe`、`RMS-Guide-Portable-X.Y.Z.exe`。目前最新：`desktop-v1.1.0`。
+- 流程中 CI 會：寫入版本號（`tauri.conf.json`、`Cargo.toml`）→ `node scripts/prepare-app.js` 把根目錄的網站內容複製到 `desktop/app/` → `npx tauri icon ../assets/icons/icon-512.png` 產生圖示 → `npx tauri build`。`app/`、`src-tauri/icons/`、`src-tauri/target/` 不進版控。
+- 網頁偵測到 `window.__TAURI__` 時：外部 `http(s)` 連結交給系統瀏覽器（`opener` 外掛 + `capabilities/default.json` 的 `opener:default`），且**不註冊 Service Worker**。這段 JS 在私人 repo 的 `build_spa.py`。
+- 沒有程式碼簽章：Windows SmartScreen 會警告；免安裝版需要系統已有 WebView2。
+- 本機沒有 Rust 工具鏈，編譯只在 CI 進行；改 `src-tauri/` 後要靠 Actions 驗證。
+- 網站內容更新後，要重新推標籤才會有包含新內容的桌面版（內容是內嵌的）。
