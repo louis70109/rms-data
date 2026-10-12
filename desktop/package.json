@@ -1,0 +1,66 @@
+{
+  "name": "rms-data-desktop",
+  "version": "1.0.0",
+  "description": "RMS 攻略庫 桌面版（離線閱讀）",
+  "main": "main.js",
+  "homepage": "https://github.com/louis70109/rms-data",
+  "author": {
+    "name": "louis70109",
+    "email": "louis70109@gmail.com"
+  },
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "prepare-app": "node scripts/prepare-app.js",
+    "start": "npm run prepare-app && electron .",
+    "dist": "npm run prepare-app && electron-builder --publish never"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "net.nijialin.rmsdata",
+    "productName": "RMS 攻略庫",
+    "copyright": "內容版權屬原作者，本程式僅作個人備份存查。",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "package.json",
+      "build/icon.png",
+      "app/**/*"
+    ],
+    "artifactName": "RMS-Guide-${version}-${os}-${arch}.${ext}",
+    "win": {
+      "icon": "build/icon.png",
+      "target": [
+        { "target": "nsis", "arch": ["x64"] },
+        { "target": "portable", "arch": ["x64"] }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "artifactName": "RMS-Guide-Setup-${version}.${ext}"
+    },
+    "portable": {
+      "artifactName": "RMS-Guide-Portable-${version}.${ext}"
+    },
+    "mac": {
+      "icon": "build/icon.png",
+      "category": "public.app-category.games",
+      "identity": null,
+      "target": [
+        { "target": "dmg", "arch": ["x64", "arm64"] }
+      ]
+    },
+    "linux": {
+      "icon": "build/icon.png",
+      "category": "Game",
+      "maintainer": "louis70109 <louis70109@gmail.com>",
+      "target": ["AppImage", "deb"]
+    }
+  }
+}
