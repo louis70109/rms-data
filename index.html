@@ -400,6 +400,13 @@ content.addEventListener('click',e=>{const j=e.target.closest('[data-jump]');
 addEventListener('keydown',e=>{if(e.key==='Escape')lb.classList.remove('show');
  if(e.key==='/'&&document.activeElement!==q){e.preventDefault();q.focus();}});
 renderNav();route();
+/* ---- 桌面版（Tauri）：外部連結交給系統瀏覽器 ---- */
+document.addEventListener('click',e=>{
+ const t=window.__TAURI__; if(!t||!t.opener)return;
+ const a=e.target.closest&&e.target.closest('a[href]'); if(!a)return;
+ const h=a.getAttribute('href')||'';
+ if(/^https?:\/\//i.test(h)){e.preventDefault();t.opener.openUrl(h);}
+},true);
 /* ---- PWA ---- */
 const BUILD="db7e8f20d672";
 function toast(t,ms){const el=document.getElementById('toast');el.textContent=t;el.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(()=>el.classList.remove('show'),ms||2600);}
@@ -407,7 +414,7 @@ let deferredInstall=null;const instBtn=document.getElementById('install');
 addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstall=e;instBtn.hidden=false;});
 instBtn.onclick=async()=>{if(!deferredInstall)return;deferredInstall.prompt();await deferredInstall.userChoice;deferredInstall=null;instBtn.hidden=true;};
 addEventListener('appinstalled',()=>{instBtn.hidden=true;toast('已安裝，可從桌面或主畫面開啟');});
-if('serviceWorker' in navigator && location.protocol!=='file:'){
+if('serviceWorker' in navigator && location.protocol!=='file:' && !window.__TAURI__){
  addEventListener('load',async()=>{
   try{
    const reg=await navigator.serviceWorker.register('sw.js');

@@ -1,17 +1,16 @@
 name: Release desktop app
 
-# 推一個 desktop-vX.Y.Z 標籤（例如 desktop-v1.0.1）就會在 Windows 打包，
-# 並建立同名 GitHub Release、附上安裝檔（安裝版與免安裝版）。
-# 也可以在 Actions 頁面手動執行並輸入版本號。
+# 推一個 desktop-vX.Y.Z 標籤（例如 desktop-v1.1.0）就會用 Tauri 在 Windows 打包，
+# 並建立同名 GitHub Release、附上安裝版與免安裝版。也可以在 Actions 頁面手動執行並輸入版本號。
 on:
   push:
     tags: ["desktop-v*"]
   workflow_dispatch:
     inputs:
       version:
-        description: "版本號（例如 1.0.1）"
+        description: "版本號（例如 1.1.0）"
         required: true
-        default: "1.0.1"
+        default: "1.1.0"
 
 permissions:
   contents: write
@@ -19,6 +18,9 @@ permissions:
 jobs:
   windows:
     runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
     steps:
       - uses: actions/checkout@v4
 
@@ -26,9 +28,14 @@ jobs:
         with:
           node-version: 20
 
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: "desktop/src-tauri -> target"
+
       - name: 決定版本號
         id: ver
-        shell: bash
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             V="${{ inputs.version }}"
@@ -37,40 +44,55 @@ jobs:
           fi
           echo "version=$V" >> "$GITHUB_OUTPUT"
 
-      - name: 安裝相依套件並準備 App 內容
-        shell: bash
+      - name: 安裝 Tauri CLI
         working-directory: desktop
+        run: npm install
+
+      - name: 寫入版本號、準備網站內容與圖示
+        working-directory: desktop
+        env:
+          V: ${{ steps.ver.outputs.version }}
         run: |
-          npm pkg set version="${{ steps.ver.outputs.version }}"
-          npm install
+          node -e "
+            const fs=require('fs');
+            const c=JSON.parse(fs.readFileSync('src-tauri/tauri.conf.json','utf8')); c.version=process.env.V;
+            fs.writeFileSync('src-tauri/tauri.conf.json', JSON.stringify(c,null,2)+'\n');
+            let t=fs.readFileSync('src-tauri/Cargo.toml','utf8'); t=t.replace(/^version = \".*\"/m,'version = \"'+process.env.V+'\"');
+            fs.writeFileSync('src-tauri/Cargo.toml', t);
+          "
           node scripts/prepare-app.js
+          npx tauri icon ../assets/icons/icon-512.png
 
       - name: 打包
         working-directory: desktop
-        env:
-          CSC_IDENTITY_AUTO_DISCOVERY: "false"
-        run: npx electron-builder --win --publish never
+        run: npx tauri build
 
-      - name: 列出安裝檔
-        shell: bash
-        run: ls -la desktop/dist/*.exe
+      - name: 整理安裝檔
+        env:
+          V: ${{ steps.ver.outputs.version }}
+        run: |
+          mkdir -p dist
+          cp desktop/src-tauri/target/release/bundle/nsis/*-setup.exe "dist/RMS-Guide-Setup-${V}.exe"
+          cp desktop/src-tauri/target/release/rms-guide.exe "dist/RMS-Guide-Portable-${V}.exe"
+          ls -la dist
 
       - uses: softprops/action-gh-release@v2
         with:
           tag_name: desktop-v${{ steps.ver.outputs.version }}
           name: RMS 攻略庫 桌面版 v${{ steps.ver.outputs.version }}
           files: |
-            desktop/dist/RMS-Guide-Setup-*.exe
-            desktop/dist/RMS-Guide-Portable-*.exe
+            dist/RMS-Guide-Setup-*.exe
+            dist/RMS-Guide-Portable-*.exe
           fail_on_unmatched_files: true
           body: |
             RMS 攻略庫 桌面版（Windows，離線閱讀）。內容與 https://rms-data.fly.dev/ 相同，安裝後不需要網路。
+            用 Tauri 打包（Windows 內建的 WebView2 顯示網頁），體積比 Electron 小很多。
 
             ### 下載
             | 檔案 | 說明 |
             |---|---|
-            | `RMS-Guide-Setup-${{ steps.ver.outputs.version }}.exe` | 安裝版（可選安裝位置，建立開始功能表與桌面捷徑） |
-            | `RMS-Guide-Portable-${{ steps.ver.outputs.version }}.exe` | 免安裝版（直接雙擊執行，不寫入系統） |
+            | `RMS-Guide-Setup-${{ steps.ver.outputs.version }}.exe` | 安裝版（安裝到目前使用者，不需要系統管理員權限；缺少 WebView2 時會自動安裝） |
+            | `RMS-Guide-Portable-${{ steps.ver.outputs.version }}.exe` | 免安裝版（直接雙擊；需要系統已有 WebView2，Windows 11 與多數 Windows 10 已內建） |
 
             ### 注意：安裝檔**沒有程式碼簽章**
             第一次執行時 Windows SmartScreen 可能出現「Windows 已保護你的電腦／未知的發行者」，
