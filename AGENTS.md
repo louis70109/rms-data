@@ -5,6 +5,63 @@ MapleRoyals 攻略庫的**成品**：單頁應用 `index.html`（內容已編碼
 
 **建置工具與來源檔在私人 repo `louis70109/rms-data-build`**（含詳細的 AGENTS.md，請先讀那份）。**不要把來源檔或建置程式推到這個公開 repo**——那會讓內容混淆失去意義，也會洩漏全部純文字。
 
+## 系統流程圖
+
+```
+ ┌────────────── 來源 ──────────────┐
+ │ mapleroyals.net（已關站）        │      royals.ms 論壇（仍在線）
+ │        │                          │            │
+ │   Wayback Machine 存檔            │            │ curl --compressed
+ └────────┼──────────────────────────┘            │
+          │ fetch_wayback_page.py                  │ 主樓 HTML + 附件圖
+          ▼                                        ▼
+ ┌──────────────────── 本機建置 C:\rb（私人 repo：rms-data-build）──────────────────┐
+ │                                                                                    │
+ │  <slug>.html（來源）  forum-*.html（來源）  *_zh.json（APQ 翻譯）                  │
+ │        │                    │                      │                               │
+ │        └──────────┬─────────┴──────────────────────┘                               │
+ │                   ▼                                                                │
+ │   build_spa.py                                                                     │
+ │     1 取正文（cm-entry-summary 配對區塊，截掉頁尾／留言／嵌入）                    │
+ │     2 套版面：一般頁 tidy ／ itcg_layout ／ apq_layout ／ boss_layout ／ jobs_supp │
+ │     3 圖片本地化：img_map.json 有的 → assets/…；沒有的 → 移除                     │
+ │     4 內容 JSON → XOR(R0y4ls!) → Base64 → 嵌入單一 index.html（含 noindex）        │
+ │        │                                   │                                       │
+ │        │ 輸出 img_urls.json（861 個外部圖）▼                                       │
+ │        │                       download_images.py（curl --parallel，可重跑）       │
+ │        │                                   │ 依真實格式命名 .png/.jpg/…            │
+ │        │                                   ▼                                       │
+ │        │                       assets/wb/（568 張）＋ img_map.json                 │
+ │        ▼                                                                           │
+ │   index.html ＋ assets/                                                            │
+ └────────┬───────────────────────────────────────────────────────────────────────────┘
+          │ publish.sh（複製＋commit＋push）
+          ▼
+ ┌────────────────── 公開 repo：louis70109/rms-data ──────────────────┐
+ │  index.html   assets/{wb,apq,forum}/   Dockerfile   fly.toml        │
+ │  .github/workflows/fly-deploy.yml          AGENTS.md  README.md     │
+ └────────┬────────────────────────────────────────────────────────────┘
+          │ git push origin main
+          ▼
+ ┌──────────── GitHub Actions（secret：FLY_API_TOKEN）────────────┐
+ │  flyctl deploy --app rms-data --remote-only                     │
+ └────────┬─────────────────────────────────────────────────────────┘
+          ▼
+ ┌───────────── Fly.io：rms-data.fly.dev（nrt）─────────────┐
+ │  容器：python http.server :8080                           │
+ │  提供 /index.html 與 /assets/*（HTTPS，閒置自動休眠）      │
+ └────────┬──────────────────────────────────────────────────┘
+          ▼
+ ┌─────────────────────── 使用者瀏覽器 ───────────────────────┐
+ │  載入 index.html → JS 解碼（Base64 → XOR）→ 內容 JSON      │
+ │  → 渲染 SPA：側欄分類（可收合）／搜尋／#slug 路由          │
+ │  → 圖片從 /assets/… 載入（點擊放大）                       │
+ └─────────────────────────────────────────────────────────────┘
+```
+
+**不在流程內（刻意）**：GitHub Pages 已關閉；`louis70109.github.io` 綁 nijialin.com 不可動；
+來源 HTML／建置程式／翻譯檔只在私人 repo，不進公開 repo。
+
 ## 這個 repo 有什麼
 | 路徑 | 說明 |
 |---|---|
