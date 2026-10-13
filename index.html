@@ -333,7 +333,8 @@ var _D="CUtbRwAGRnAKWRYOEkMrRxxYAFENchIaVRhRG3ISkZLjlqjVElUUTgdIJlwcFlZTA7aJ79HD
 const _K=[82,48,121,52,108,115,33];
 const _b=atob(_D),_u=new Uint8Array(_b.length);
 for(let i=0;i<_b.length;i++)_u[i]=_b.charCodeAt(i)^_K[i%_K.length];
-const DATA=JSON.parse(new TextDecoder().decode(_u));
+let DATA=JSON.parse(new TextDecoder().decode(_u));
+if(window.__TAURI__)DATA=DATA.filter(d=>!d.slug.startsWith('tool-'));   // 桌面版不含線上工具（OCR）
 const ORDER=['規則','前置任務','轉職','技能書','道具','論壇攻略','工具'];
 const DESC={'規則':'遊戲規範與題庫','前置任務':'技能、區域與 PQ 的前置條件','轉職':'二～四轉流程','技能書':'各職業技能書掉落','道具':'道具與裝備製作','論壇攻略':'原 royals.ms 論壇精選攻略（英文原文）','工具':'實用小工具（本機執行，不上傳資料）'};
 const nav=document.getElementById('nav'),content=document.getElementById('content'),q=document.getElementById('q');
