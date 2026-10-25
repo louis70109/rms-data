@@ -114,7 +114,13 @@ python -m http.server 8000     # 然後開 http://127.0.0.1:8000
 - 本機沒有 Rust 工具鏈，編譯只在 CI 進行；改 `src-tauri/` 後要靠 Actions 驗證。
 - 網站內容更新後，要重新推標籤才會有包含新內容的桌面版（內容是內嵌的）。
 
-## 價格 OCR 工具（站內「工具」分類）
+## 價格 OCR 工具（目前關閉）
+- 線上版暫時不提供此功能：私人建置 repo 的 `OCR_ENABLED = False`，`assets/ocr/` 已從本 repo 移除。重新開啟時由私人 repo 的 `publish.sh` 一併發佈，不要手動加回。
+
+## 舊說明（重新開啟時參考）
 - 頁面 `#tool-price-ocr`：貼上遊戲 Item Search 截圖，讀出商品名稱與價格，標出最低價，第二低價 ≥ 2 倍時提醒。圖片只在瀏覽器處理。
 - 執行檔在 `assets/ocr/`（tesseract.js、worker、三個 LSTM 核心、`eng.traineddata.gz`，共約 14 MB，只在使用時下載、之後快取）。這些檔案由私人建置 repo 產生後複製過來，**不要手改**。
 - **OCR 只放線上版，桌面版不含**：`desktop/scripts/prepare-app.js` 會刪掉 `assets/ocr`，網頁在 Tauri 裡會隱藏「工具」頁。
+
+## 攻略內連結
+- 攻略上所有外部連結一律指向 `https://wiki.royals.ms/items`；站內 `#slug` 跳轉保留。
