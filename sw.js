@@ -1,4 +1,4 @@
-/* RMS 攻略庫 Service Worker（由 build_spa.py 以內容雜湊替換 f7d2b7cbe74e 後輸出為 sw.js）
+/* RMS 攻略庫 Service Worker（由 build_spa.py 以內容雜湊替換 4586cb451925 後輸出為 sw.js）
  *
  * 策略
  *  - 殼（index.html、manifest、圖示）：安裝時預先快取；導覽請求「網路優先、失敗用快取」，
@@ -9,7 +9,7 @@
  *  - 內容更新 → VERSION 改變 → 新 SW 啟用時刪除舊的殼快取。
  *  - 若曾「原地替換」同名圖片，請把 ASSET_CACHE 的版本號 +1。
  */
-const VERSION = "f7d2b7cbe74e";
+const VERSION = "4586cb451925";
 const CORE_CACHE = "rms-core-" + VERSION;
 const ASSET_CACHE = "rms-assets-v1";
 const CORE_URLS = [
