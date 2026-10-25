@@ -63,8 +63,11 @@ jobs:
           node scripts/prepare-app.js
           npx tauri icon ../assets/icons/icon-512.png
 
-      - name: 打包
+      - name: 打包（含更新簽章）
         working-directory: desktop
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         run: npx tauri build
 
       - name: 整理安裝檔
@@ -74,7 +77,19 @@ jobs:
           mkdir -p dist
           cp desktop/src-tauri/target/release/bundle/nsis/*-setup.exe "dist/RMS-Guide-Setup-${V}.exe"
           cp desktop/src-tauri/target/release/rms-guide.exe "dist/RMS-Guide-Portable-${V}.exe"
+          # 產生 OTA 更新清單 latest.json（簽章取自 tauri build 產生的 .sig）
+          SIG_FILE=$(ls desktop/src-tauri/target/release/bundle/nsis/*-setup.exe.sig)
+          node -e "
+            const fs=require('fs');
+            const v=process.env.V;
+            const sig=fs.readFileSync(process.argv[1],'utf8').trim();
+            const j={version:v,notes:'RMS 攻略庫 桌面版 v'+v,pub_date:new Date().toISOString(),
+              platforms:{'windows-x86_64':{signature:sig,
+                url:'https://github.com/louis70109/rms-data/releases/download/desktop-v'+v+'/RMS-Guide-Setup-'+v+'.exe'}}};
+            fs.writeFileSync('dist/latest.json',JSON.stringify(j,null,2));
+          " "$SIG_FILE"
           ls -la dist
+          cat dist/latest.json
 
       - uses: softprops/action-gh-release@v2
         with:
@@ -83,6 +98,7 @@ jobs:
           files: |
             dist/RMS-Guide-Setup-*.exe
             dist/RMS-Guide-Portable-*.exe
+            dist/latest.json
           fail_on_unmatched_files: true
           body: |
             RMS 攻略庫 桌面版（Windows，離線閱讀）。內容與 https://rms-data.fly.dev/ 相同，安裝後不需要網路。
