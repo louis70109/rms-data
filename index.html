@@ -304,6 +304,14 @@ details.spoiler>*:last-child{padding-bottom:12px}
  .qa .q,.qa .a{padding:12px 14px}
  #scrim{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:20}
  body.open #scrim{display:block}
+ /* 滑動：側欄內捲動不帶動背景；打開時鎖住背景捲動 */
+ #side{overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y}
+ body.open{overflow:hidden;touch-action:none}
+ body.open #side{touch-action:pan-y}
+ #content{overscroll-behavior-y:contain}
+ .scrollbox,#content table{-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+ .apq-gal,.rc-grid{-webkit-overflow-scrolling:touch}
+ #content img,#content .pic{-webkit-user-drag:none;user-select:none}
 }
 /* 小手機 */
 @media(max-width:400px){
@@ -416,6 +424,23 @@ function route(){if(ocrPasteH){document.removeEventListener('paste',ocrPasteH);o
 addEventListener('hashchange',route);q.addEventListener('input',()=>renderNav(q.value));
 document.getElementById('menu').onclick=()=>document.body.classList.toggle('open');
 document.getElementById('scrim').onclick=()=>document.body.classList.remove('open');
+/* 手機滑動開關側欄：左邊緣向右滑打開；側欄內向左滑關閉（水平距離夠大、且比垂直距離大才算） */
+(function(){
+ let sx=0,sy=0,t0=0,on=false;
+ const narrow=()=>matchMedia('(max-width:820px)').matches;
+ addEventListener('touchstart',e=>{
+  if(!narrow()||e.touches.length!==1)return;
+  sx=e.touches[0].clientX; sy=e.touches[0].clientY; t0=Date.now();
+  on=!document.body.classList.contains('open') ? sx<28 : document.getElementById('side').contains(e.target);
+ },{passive:true});
+ addEventListener('touchend',e=>{
+  if(!on||!narrow())return; on=false;
+  const t=e.changedTouches[0]; const dx=t.clientX-sx, dy=t.clientY-sy;
+  if(Date.now()-t0>800||Math.abs(dy)>Math.abs(dx)*0.6||Math.abs(dx)<60)return;
+  if(dx>0&&!document.body.classList.contains('open'))document.body.classList.add('open');
+  else if(dx<0&&document.body.classList.contains('open'))document.body.classList.remove('open');
+ },{passive:true});
+})();
 document.getElementById('brand').onclick=()=>{location.hash='';};
 const cB=document.getElementById('collapse'),rB=document.getElementById('reopen');
 function setCollapsed(v){document.body.classList.toggle('collapsed',v);try{localStorage.setItem('rms_collapsed',v?'1':'0');}catch(e){}}
