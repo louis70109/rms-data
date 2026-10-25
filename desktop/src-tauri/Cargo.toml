@@ -14,6 +14,7 @@ tauri = { version = "2", features = [] }
 tauri-plugin-opener = "2"
 tauri-plugin-updater = "2"
 tauri-plugin-dialog = "2"
+serde_json = "1"
 
 # 縮小執行檔
 [profile.release]
