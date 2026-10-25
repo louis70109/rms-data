@@ -124,3 +124,6 @@ python -m http.server 8000     # 然後開 http://127.0.0.1:8000
 
 ## 攻略內連結
 - 攻略上所有外部連結一律指向 `https://wiki.royals.ms/items`；站內 `#slug` 跳轉保留。
+
+## 攻略內的物品連結
+- 攻略正文中，完全相符且唯一對應的多字物品名稱，連到 `https://wiki.royals.ms/items/<id>`（物品頁）。其餘外部連結指向 `https://wiki.royals.ms/items`。站內 `#slug` 跳轉保留。
