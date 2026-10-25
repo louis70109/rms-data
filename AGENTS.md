@@ -1,129 +1,76 @@
-# AGENTS.md — rms-data（公開）
+# AGENTS.md — rms-data（公開成品）
 
-MapleRoyals 攻略庫的**成品**：單頁應用 `index.html`（內容已編碼）、`assets/`（自存圖片），以及 Fly.io 部署設定。
+本 repo 是 MapleRoyals 攻略庫的**公開成品**。內容包含：
+
+- 網站 `index.html` 與 `assets/`（單一檔案，內容已編碼）。
+- PWA 檔案：`sw.js`、`manifest.json`、`assets-manifest.json`。
+- 部署設定：`Dockerfile`、`fly.toml`、`.github/workflows/`。
+- 桌面版：`desktop/`（Tauri）。
+
 線上網址：https://rms-data.fly.dev/
 
-**建置工具與來源檔在私人 repo `louis70109/rms-data-build`**（含詳細的 AGENTS.md，請先讀那份）。**不要把來源檔或建置程式推到這個公開 repo**——那會讓內容混淆失去意義，也會洩漏全部純文字。
+> **不可在這裡直接修改 `index.html`。**
+> 內容由私人建置 repo（`C:\rb`，`louis70109/rms-data-build`）產生。
+> 要更新內容，必須回私人 repo 修改，建置後用該 repo 的 `publish.sh` 發佈到這裡。
+> 本 repo 只收成品。不可放入來源檔或建置程式。
 
-## 系統流程圖
+完整流程見私人 repo 的 `AGENTS.md`。本文件只列出與公開 repo 有關的事項。
 
-```
- ┌────────────── 來源 ──────────────┐
- │ mapleroyals.net（已關站）        │      royals.ms 論壇（仍在線）
- │        │                          │            │
- │   Wayback Machine 存檔            │            │ curl --compressed
- └────────┼──────────────────────────┘            │
-          │ fetch_wayback_page.py                  │ 主樓 HTML + 附件圖
-          ▼                                        ▼
- ┌──────────────────── 本機建置 C:\rb（私人 repo：rms-data-build）──────────────────┐
- │                                                                                    │
- │  <slug>.html（來源）  forum-*.html（來源）  *_zh.json（APQ 翻譯）                  │
- │        │                    │                      │                               │
- │        └──────────┬─────────┴──────────────────────┘                               │
- │                   ▼                                                                │
- │   build_spa.py                                                                     │
- │     1 取正文（cm-entry-summary 配對區塊，截掉頁尾／留言／嵌入）                    │
- │     2 套版面：一般頁 tidy ／ itcg_layout ／ apq_layout ／ boss_layout ／ jobs_supp │
- │     3 圖片本地化：img_map.json 有的 → assets/…；沒有的 → 移除                     │
- │     4 內容 JSON → XOR(R0y4ls!) → Base64 → 嵌入單一 index.html（含 noindex）        │
- │        │                                   │                                       │
- │        │ 輸出 img_urls.json（861 個外部圖）▼                                       │
- │        │                       download_images.py（curl --parallel，可重跑）       │
- │        │                                   │ 依真實格式命名 .png/.jpg/…            │
- │        │                                   ▼                                       │
- │        │                       assets/wb/（568 張）＋ img_map.json                 │
- │        ▼                                                                           │
- │   index.html ＋ assets/                                                            │
- └────────┬───────────────────────────────────────────────────────────────────────────┘
-          │ publish.sh（複製＋commit＋push）
-          ▼
- ┌────────────────── 公開 repo：louis70109/rms-data ──────────────────┐
- │  index.html   assets/{wb,apq,forum}/   Dockerfile   fly.toml        │
- │  .github/workflows/fly-deploy.yml          AGENTS.md  README.md     │
- └────────┬────────────────────────────────────────────────────────────┘
-          │ git push origin main
-          ▼
- ┌──────────── GitHub Actions（secret：FLY_API_TOKEN）────────────┐
- │  flyctl deploy --app rms-data --remote-only                     │
- └────────┬─────────────────────────────────────────────────────────┘
-          ▼
- ┌───────────── Fly.io：rms-data.fly.dev（nrt）─────────────┐
- │  容器：python http.server :8080                           │
- │  提供 /index.html 與 /assets/*（HTTPS，閒置自動休眠）      │
- └────────┬──────────────────────────────────────────────────┘
-          ▼
- ┌─────────────────────── 使用者瀏覽器 ───────────────────────┐
- │  載入 index.html → JS 解碼（Base64 → XOR）→ 內容 JSON      │
- │  → 渲染 SPA：側欄分類（可收合）／搜尋／#slug 路由          │
- │  → 圖片從 /assets/… 載入（點擊放大）                       │
- └─────────────────────────────────────────────────────────────┘
-```
+## 1. 部署
 
-**不在流程內（刻意）**：GitHub Pages 已關閉；`louis70109.github.io` 綁 nijialin.com 不可動；
-來源 HTML／建置程式／翻譯檔只在私人 repo，不進公開 repo。
+- 推送 `main`，GitHub Actions 會自動執行 `flyctl deploy --remote-only`。
+- 這個流程需要 repo secret `FLY_API_TOKEN`。使用者已自行設定。不可索取或寫出 token。
+- Dockerfile 只複製 `index.html`、PWA 檔案與 `assets/`。
+- **不可加入會排除 `index.html` 的 `.dockerignore`。** 曾因此部署失敗。
+- Actions 失敗時，可手動執行 `flyctl deploy --app rms-data`。執行後用 `flyctl status --app rms-data` 確認。
 
-## 這個 repo 有什麼
-| 路徑 | 說明 |
-|---|---|
-| `index.html` | 40 篇攻略的單頁應用（資料以 XOR+Base64 編碼；有 `noindex`） |
-| `assets/wb/` | 從 Wayback 下載的頁面圖片（568 張） |
-| `assets/apq/`、`assets/forum/` | APQ 與論壇攻略的圖片（自原站下載） |
-| `Dockerfile`、`fly.toml` | 靜態站部署（Python `http.server`，port 8080，app `rms-data`，region nrt） |
-| `.github/workflows/fly-deploy.yml` | push 到 `main` 時自動 `flyctl deploy --remote-only` |
-| `.nojekyll` | 無用途（GitHub Pages 已關閉），保留無妨 |
+## 2. 圖片與資料夾
 
-## 在本機看網站
-不用安裝任何東西：直接雙擊 `index.html`，或：
-```bash
-python -m http.server 8000     # 然後開 http://127.0.0.1:8000
-```
-（`index.html` 是單檔；圖片在 `assets/`，要放在同一個資料夾。）
+- `assets/wb/`：原站圖片（自存）。
+- `assets/apq/`：APQ 攻略圖片。
+- `assets/forum/`：論壇攻略圖片。
+- `assets/icons/`：PWA 圖示。
+- `assets/ocr/`：價格 OCR 的執行檔（**目前不發佈**，見第 5 節）。
+- 網站不可連到 Wayback 或其他外部圖床。
 
-## 更新網站的流程
-1. 在私人 repo（建置資料夾，如 `C:\rb`）修改來源／翻譯／版面，執行 `python -I build_spa.py "C:/rb"` 產生新的 `index.html`；圖片用 `download_images.py` 下載。
-2. 用私人 repo 的 `publish.sh <這個 repo 的路徑> "訊息"`，或手動把 `index.html` 與 `assets/` 複製過來，commit、push。
-3. GitHub Actions 自動部署到 Fly.io。看 Actions 結果或 `curl -I https://rms-data.fly.dev/` 確認。
+## 3. 攻略內的連結
 
-## 部署細節
-- 自動部署需要 repo secret **`FLY_API_TOKEN`**（已設定）。沒設定時，工作流程會略過部署並印出訊息。token 由使用者自己用 `flyctl tokens create deploy -a rms-data` 產生，**不要寫進檔案或對話**。
-- 手動部署：安裝並登入 `flyctl`（`flyctl auth login` 由使用者自己做），在這個 repo 根目錄執行 `flyctl deploy --app rms-data`。
-- **不要用 `.dockerignore` 排除 `index.html`**（曾因此部署失敗）。Dockerfile 只複製 `index.html` 與 `assets`。
-- 部署指令偶爾在結尾回報錯誤，但新機器其實已啟動；用 `flyctl status --app rms-data` 與線上檢查確認。
+- 外部連結一律指向 `https://wiki.royals.ms/items`（列表）。
+- 物品名稱指向 `https://wiki.royals.ms/items/<id>`（物品頁）。
+- BOSS 名稱指向 `https://wiki.royals.ms/monsters/<id>`（怪物頁），或指向站內頁（`#forum-en-bosses`、`#pre-zakum` 等）。
+- 站內跳轉使用 `#slug`。
+- 這些規則在私人 repo 實作。本 repo 只收結果。
 
-## 注意事項
-- **GitHub Pages 已關閉**。`louis70109.github.io` 綁有 `nijialin.com`（另一個網站），**不要解除自訂網域**，除非使用者明確要求並知道會影響那個網站。
-- 編碼（XOR+Base64）只是混淆，金鑰就在頁面 JS 裡，**不能防止有心人解碼**；也不要做 cloaking／偽裝搜尋引擎。
-- 圖片只引用 `assets/` 內的檔案；不要再連到 Wayback 或外部圖床。
-- `/assets/` 目錄列表目前是開啟的（Python `http.server` 預設），這是已知缺口。
+## 4. 桌面版（Windows，Tauri）
 
-## 待辦
-關閉 `/assets/` 目錄列表。詳見私人 repo 的 AGENTS.md「待辦」。
+- 位置：`desktop/`。Tauri v2，Rust 外殼加 WebView2。只打包 Windows。不用 Electron。
+- 推送 `desktop-vX.Y.Z` 標籤，GitHub Actions 會自動打包並建立 Release。
+  - 安裝版：`RMS-Guide-Setup-X.Y.Z.exe`（約 10 MB）。
+  - 免安裝版：`RMS-Guide-Portable-X.Y.Z.exe`（約 12 MB）。
+- 手動執行：在 Actions 頁面選 `Release desktop app`，輸入版本號。
+- 桌面版內嵌網站內容。**網站更新後，必須推新標籤，桌面版才會更新。**
+- 桌面版不含價格 OCR。`desktop/scripts/prepare-app.js` 會刪掉 `assets/ocr`。
+- 安裝檔沒有程式碼簽章。Windows SmartScreen 會出現警告，使用者需點「其他資訊」再點「仍要執行」。
+- 免安裝版需要 WebView2。Windows 11 與多數 Windows 10 已內建。
 
-## PWA（已完成）
-- `manifest.json`、`sw.js`、`assets-manifest.json` 由私人 repo 的 `build_spa.py` 產生，`assets/icons/` 為圖示；**Dockerfile 必須複製這三個檔案**（已設定）。
-- `sw.js` 的版本是內容雜湊，內容變動就會自動換新；殼網路優先、圖片快取優先，頁面載入後背景預先快取全部圖片（631 個）。
-- 若原地替換同名圖片，需調高 `sw.js` 範本內 `ASSET_CACHE` 版本（在私人 repo 的 `pwa/sw.template.js`）。
+## 5. 價格 OCR（目前關閉）
 
-## 桌面版（Windows，Tauri）
-- 位置：`desktop/`。用 **Tauri v2**（Rust 外殼 + Windows 內建 WebView2）把 `index.html` + `assets/` 包成程式，**不用 Electron**（使用者嫌太肥；Electron 版約 87 MB，Tauri 版約 10–12 MB）。
-- 只打包 **Windows**（使用者指定）。產出：安裝版（NSIS，`currentUser` 安裝）與免安裝版（直接用編譯出的 `rms-guide.exe`）。
-- 發佈：推標籤 `desktop-vX.Y.Z`（或在 Actions 手動執行並輸入版本）→ `.github/workflows/release-desktop.yml` 在 `windows-latest` 用 Rust + Node 打包，建立 Release 並附上 `RMS-Guide-Setup-X.Y.Z.exe`、`RMS-Guide-Portable-X.Y.Z.exe`。目前最新：`desktop-v1.1.0`。
-- 流程中 CI 會：寫入版本號（`tauri.conf.json`、`Cargo.toml`）→ `node scripts/prepare-app.js` 把根目錄的網站內容複製到 `desktop/app/` → `npx tauri icon ../assets/icons/icon-512.png` 產生圖示 → `npx tauri build`。`app/`、`src-tauri/icons/`、`src-tauri/target/` 不進版控。
-- 網頁偵測到 `window.__TAURI__` 時：外部 `http(s)` 連結交給系統瀏覽器（`opener` 外掛 + `capabilities/default.json` 的 `opener:default`），且**不註冊 Service Worker**。這段 JS 在私人 repo 的 `build_spa.py`。
-- 沒有程式碼簽章：Windows SmartScreen 會警告；免安裝版需要系統已有 WebView2。
-- 本機沒有 Rust 工具鏈，編譯只在 CI 進行；改 `src-tauri/` 後要靠 Actions 驗證。
-- 網站內容更新後，要重新推標籤才會有包含新內容的桌面版（內容是內嵌的）。
+- 開關在私人 repo：`OCR_ENABLED = False`。
+- 關閉時，`assets/ocr/` 不會發佈，側欄也沒有「工具」分類。
+- 開啟時，私人 repo 的 `publish.sh` 會把 `assets/ocr/` 複製過來。**不可手動加入 `assets/ocr/`。**
+- OCR 約 14 MB。只在使用者進入工具頁時才下載，之後由 service worker 快取。
 
-## 價格 OCR 工具（目前關閉）
-- 線上版暫時不提供此功能：私人建置 repo 的 `OCR_ENABLED = False`，`assets/ocr/` 已從本 repo 移除。重新開啟時由私人 repo 的 `publish.sh` 一併發佈，不要手動加回。
+## 6. PWA
 
-## 舊說明（重新開啟時參考）
-- 頁面 `#tool-price-ocr`：貼上遊戲 Item Search 截圖，讀出商品名稱與價格，標出最低價，第二低價 ≥ 2 倍時提醒。圖片只在瀏覽器處理。
-- 執行檔在 `assets/ocr/`（tesseract.js、worker、三個 LSTM 核心、`eng.traineddata.gz`，共約 14 MB，只在使用時下載、之後快取）。這些檔案由私人建置 repo 產生後複製過來，**不要手改**。
-- **OCR 只放線上版，桌面版不含**：`desktop/scripts/prepare-app.js` 會刪掉 `assets/ocr`，網頁在 Tauri 裡會隱藏「工具」頁。
+- `sw.js` 的版本是內容雜湊。內容改變，版本就改變。不需要手動改版本號。
+- 若曾原地替換同名圖片，必須在私人 repo 把 `ASSET_CACHE` 的版本加一。
+- 內建瀏覽器預覽不支援 Service Worker。請在 Chrome、Edge 或手機上測試。
 
-## 攻略內連結
-- 攻略上所有外部連結一律指向 `https://wiki.royals.ms/items`；站內 `#slug` 跳轉保留。
+## 7. 注意事項
 
-## 攻略內的物品連結
-- 攻略正文中，完全相符且唯一對應的多字物品名稱，連到 `https://wiki.royals.ms/items/<id>`（物品頁）。其餘外部連結指向 `https://wiki.royals.ms/items`。站內 `#slug` 跳轉保留。
+- Fly.io 的容器以 Python `http.server` 提供靜態檔。`/assets/` 目錄列表是開啟的。這是已知缺口。
+- 站內 HTML 有 `noindex, nofollow, noarchive`。使用者已放棄 SEO。
+- XOR+Base64 只是混淆，不是保護。不可向使用者宣稱它能防官方或防爬蟲。
+- 不可繞過密碼保護頁。
+- 不可解除 `louis70109.github.io` 與 `nijialin.com` 的綁定。該網域承載「忍者工坊」。
+- CSV 匯出檔是明文。**不可發佈到公開網址。**
