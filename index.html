@@ -164,10 +164,47 @@ details.spoiler>*:last-child{padding-bottom:12px}
  padding:9px 16px;border-radius:999px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;z-index:50;
  max-width:90vw;text-align:center}
 #toast.show{opacity:1;transform:translate(-50%,0)}
+/* ---- 貓咪：橘色虎斑貓，顏色用主題變數（--brand／--brand2），亮暗模式都適用 ---- */
+/* 顏色用變數：symbol 內不能用祖先選擇器，改由使用處（#brand、#top）覆寫 --cat-b／--cat-b2 */
+.c-b{fill:var(--cat-b,var(--brand))}.c-b2{fill:var(--cat-b2,var(--brand2))}.c-ear{fill:#f7b7a3}.c-eye{fill:#2b2118}
+.c-ln{fill:none;stroke:#2b2118;stroke-width:1.1;stroke-linecap:round;opacity:.75}
+.c-st{fill:none;stroke:#b8441a;stroke-width:1.8;stroke-linecap:round;opacity:.7}
+.c-tail{fill:none;stroke:var(--brand);stroke-width:5.5;stroke-linecap:round}
+.cat-ico{width:26px;height:26px;flex:none;margin-right:8px;vertical-align:-6px}
+#brand,#top{--cat-b:#fff;--cat-b2:#ffe3cf}
+#brand h1{display:flex;align-items:center}
+#top{display:flex;align-items:center;justify-content:center;padding:0}
+#top svg{width:28px;height:28px}
+/* symbol 內的元素不在其他元素底下，選擇器不能用祖先 */
+.c-tail{transform-box:fill-box;transform-origin:0% 100%;animation:ctail 2.8s ease-in-out infinite}
+.c-eye{transform-box:fill-box;transform-origin:50% 50%;animation:cblink 5s infinite}
+@keyframes ctail{0%,100%{transform:rotate(-10deg)}50%{transform:rotate(14deg)}}
+@keyframes cblink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}
+/* 段落標題前的貓掌；首頁卡片的 h2 用 flex 排版，不加 */
+#content *:not(.card)>h2::before{content:"";display:inline-block;width:1em;height:1em;margin-right:.45em;vertical-align:-.14em;
+ background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='%23e8632a'%3E%3Cellipse cx='12' cy='16' rx='5.5' ry='4.5'/%3E%3Cellipse cx='5.5' cy='10.5' rx='2.2' ry='3'/%3E%3Cellipse cx='10' cy='5.8' rx='2.2' ry='3'/%3E%3Cellipse cx='14.5' cy='5.8' rx='2.2' ry='3'/%3E%3Cellipse cx='18.5' cy='10.5' rx='2.2' ry='3'/%3E%3C/g%3E%3C/svg%3E") center/contain no-repeat}
+#content ul:not([class])>li::marker{color:var(--brand)}
+/* 偶爾出現的貓：浮在頁面上，不佔排版。點一下＝拍走；拖曳＝移動；點標題或側欄按鈕＝叫回來 */
+#content{position:relative}
+.cat-pop{position:absolute;z-index:6;width:76px;height:76px;padding:0;margin:0;border:0;background:none;cursor:grab;touch-action:none;
+ -webkit-tap-highlight-color:transparent;filter:drop-shadow(0 3px 4px rgba(0,0,0,.25));animation:cpop .5s cubic-bezier(.3,1.4,.5,1)}
+.cat-pop.fixed{position:fixed;z-index:12}
+.cat-pop svg{width:100%;height:100%;display:block;overflow:visible;pointer-events:none}
+.cat-pop.drag{cursor:grabbing;animation:none;transform:scale(1.07)}
+.cat-pop.swat{animation:cswat .72s ease-in forwards;pointer-events:none}
+.cat-pop.leave{opacity:0;transition:opacity .6s;pointer-events:none}
+.cat-pop:focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:12px}
+@keyframes cpop{0%{transform:translateY(-26px) scale(.6);opacity:0}60%{transform:translateY(4px) scale(1.08,.92);opacity:1}100%{transform:none;opacity:1}}
+@keyframes cswat{0%{transform:none;opacity:1}100%{transform:translate(var(--sx,120px),var(--sy,-90px)) rotate(var(--sr,540deg)) scale(.6);opacity:0}}
+#wn h2{display:flex;align-items:center}#wn h2 .cat-ico{width:30px;height:30px}
+@media(prefers-reduced-motion:reduce){.c-tail,.c-eye,.cat-pop{animation:none}.cat-pop.swat{opacity:0;transition:opacity .2s}}
+@media print{.cat-pop{display:none}}
 /* 更新內容（OTA）：更新後第一次開啟時顯示這次改了什麼；側欄「更新紀錄」按鈕隨時可看 */
-#wnbtn{margin:auto 12px 16px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:none;
+#catbtn,#wnbtn{padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:none;
  color:var(--sideink);font:inherit;font-size:13.5px;cursor:pointer}
-#wnbtn:hover{background:var(--sidehover)}
+#catbtn:hover,#wnbtn:hover{background:var(--sidehover)}
+#catbtn{margin:auto 12px 8px}
+#wnbtn{margin:0 12px 16px}
 #side:has(#install:not([hidden])) #wnbtn{margin-bottom:8px}
 #wn{position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.55)}
 #wn.show{display:flex}
@@ -350,10 +387,15 @@ details.spoiler>*:last-child{padding-bottom:12px}
 }
 </style></head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+<symbol id="cat-face" viewBox="0 0 32 32"><path class="c-b" d="M5 14 4 3l8 5.5zM27 14 28 3l-8 5.5z"/><path class="c-ear" d="M6.8 11.5 6.2 6l3.6 2.6zM25.2 11.5 25.8 6l-3.6 2.6z"/><ellipse class="c-b" cx="16" cy="18" rx="12" ry="10.5"/><path class="c-st" d="M16 8.2v3M12.5 9v2.4M19.5 9v2.4"/><ellipse class="c-eye" cx="11.2" cy="17.5" rx="1.6" ry="2.1"/><ellipse class="c-eye" cx="20.8" cy="17.5" rx="1.6" ry="2.1"/><path d="M14.6 21.4h2.8l-1.4 1.8z" fill="#e58a8a"/><path class="c-ln" d="M16 23.2v1.2M16 24.4q-1.6 1.6-3.2.8M16 24.4q1.6 1.6 3.2.8M3 20l5 1M3 24l5-1.4M29 20l-5 1M29 24l-5-1.4"/></symbol>
+<symbol id="cat-sit" viewBox="0 0 64 64"><path class="c-tail" d="M46 58c11 0 15-9 10-19"/><ellipse class="c-b" cx="32" cy="45" rx="15" ry="16.5"/><ellipse class="c-b2" cx="32" cy="49" rx="8" ry="11" opacity=".55"/><ellipse class="c-b2" cx="25" cy="59.5" rx="5.2" ry="3"/><ellipse class="c-b2" cx="39" cy="59.5" rx="5.2" ry="3"/><path class="c-b" d="M17.5 17 19 3l10.5 8zM46.5 17 45 3l-10.5 8z"/><path class="c-ear" d="M20.6 13.5 21.2 7.8l5 3.6zM43.4 13.5 42.8 7.8l-5 3.6z"/><ellipse class="c-b" cx="32" cy="25" rx="16.5" ry="14"/><path class="c-st" d="M32 12.5v4M27 13.4v3.2M37 13.4v3.2"/><ellipse class="c-eye" cx="25.5" cy="24.5" rx="2" ry="2.7"/><ellipse class="c-eye" cx="38.5" cy="24.5" rx="2" ry="2.7"/><path d="M30.4 29.6h3.2L32 31.9z" fill="#e58a8a"/><path class="c-ln" d="M32 31.9v1.6M32 33.5q-2 2-4 1M32 33.5q2 2 4 1M14 27l8 1.5M14 32l8-2M50 27l-8 1.5M50 32l-8-2"/></symbol>
+</defs></svg>
 <aside id="side">
-  <div id="brand"><div><h1>RMS 攻略庫</h1><p>MapleRoyals · 自 Wayback Machine 備份</p></div><button id="collapse" aria-label="收合側欄" title="收合側欄">«</button></div>
+  <div id="brand"><div><h1><svg class="cat-ico" aria-hidden="true"><use href="#cat-face"/></svg>RMS 攻略庫</h1><p>MapleRoyals · 自 Wayback Machine 備份</p></div><button id="collapse" aria-label="收合側欄" title="收合側欄">«</button></div>
   <input id="q" placeholder="🔍 搜尋標題…（按 /）" autocomplete="off">
   <nav id="nav"></nav>
+  <button id="catbtn" type="button">🐾 叫貓咪出來</button>
   <button id="wnbtn" type="button">✨ 更新紀錄</button>
   <button id="install" type="button" hidden>＋ 安裝為 App</button>
 </aside>
@@ -364,7 +406,7 @@ details.spoiler>*:last-child{padding-bottom:12px}
   <article id="content"></article>
 </div>
 <button id="reopen" aria-label="展開側欄" title="展開側欄">☰</button>
-<button id="top" aria-label="回到頂部">↑</button>
+<button id="top" aria-label="回到頂部" title="回到頂部"><svg aria-hidden="true"><use href="#cat-face"/></svg></button>
 <div id="lb"><img alt=""></div>
 <div id="wn" role="dialog" aria-modal="true" aria-label="更新內容"><div class="box"></div></div>
 <script>
@@ -422,13 +464,84 @@ function bounceTitle(el){
  });
  el.textContent=''; el.appendChild(frag);
 }
+/* 貓咪標記（show()／home() 會用到，必須在第一次渲染之前宣告） */
+/* ---- 貓咪：偶爾出現，浮在頁面上不佔排版。點一下＝拍走；拖曳＝移動；點標題或側欄「叫貓咪出來」＝叫回來 ---- */
+const CAT_SVG='<svg viewBox="0 0 64 64" aria-hidden="true"><use href="#cat-sit"/></svg>';
+let catEl=null,catTimer=0,catLeave=0;
+function catSS(k,v){try{if(v===undefined)return sessionStorage.getItem(k);sessionStorage.setItem(k,v);}catch(e){}return null;}
+function catReduce(){return matchMedia('(prefers-reduced-motion:reduce)').matches;}
+function catRemove(){clearTimeout(catLeave);if(catEl){catEl.remove();catEl=null;}}
+function catArmLeave(c){clearTimeout(catLeave);catLeave=setTimeout(()=>{if(catEl!==c)return;c.classList.add('leave');setTimeout(()=>{if(catEl===c)catRemove();},700);},22000);}
+function catSwat(){
+ const c=catEl; if(!c)return; catEl=null; clearTimeout(catLeave);
+ const dir=Math.random()<.5?-1:1;
+ c.style.setProperty('--sx',Math.round(dir*(110+Math.random()*80))+'px');
+ c.style.setProperty('--sy',Math.round(-60-Math.random()*70)+'px');
+ c.style.setProperty('--sr',Math.round(dir*(360+Math.random()*360))+'deg');
+ c.classList.add('swat'); setTimeout(()=>c.remove(),catReduce()?260:780);
+ catSS('rms_cat_quiet','1');   // 這個分頁階段內不再自己跑出來，直到你叫牠
+ if(catSS('rms_cat_hint'))toast(['喵嗚～','（被拍走了）','喵！'][Math.floor(Math.random()*3)],1500);
+ else{catSS('rms_cat_hint','1');toast('喵嗚～ 點標題，或側欄的「叫貓咪出來」，可以把牠叫回來',3800);}
+}
+function catSpawn(kind){
+ catRemove();
+ const c=document.createElement('button'); c.type='button'; c.className='cat-pop'; c.innerHTML=CAT_SVG;
+ c.setAttribute('aria-label','貓咪：點一下拍走，拖曳可以移動'); c.title='點一下拍走，拖曳可以移動';
+ const title=content.querySelector('h1.t,.home-hero h1');
+ if(kind==='title'&&title){   // 坐在標題文字上，擋住幾個字
+  // 以「標題文字實際佔的範圍」（第一行）定位，標題很短時也能蓋到字
+  const cr=content.getBoundingClientRect(),w=76,rg=document.createRange();
+  rg.selectNodeContents(title);
+  const rs=[...rg.getClientRects()].filter(r=>r.width>0&&r.height>0); const r0=rs[0]||title.getBoundingClientRect();
+  const line=rs.filter(r=>Math.abs(r.top-r0.top)<6);
+  const tl=Math.min(...(line.length?line:[r0]).map(r=>r.left)),tr_=Math.max(...(line.length?line:[r0]).map(r=>r.right));
+  const cx=tl+Math.random()*Math.max(0,tr_-tl);                       // 貓的中心落在文字範圍內
+  c.style.left=Math.round(Math.max(0,Math.min(cx-w/2-cr.left,content.clientWidth-w)))+'px';
+  c.style.top=Math.round(r0.top-cr.top+r0.height/2-w/2+8)+'px';
+  content.appendChild(c);
+ }else{                       // 從畫面左下角探頭
+  c.classList.add('fixed'); c.style.left=Math.round(12+Math.random()*40)+'px'; c.style.bottom='-22px';
+  document.body.appendChild(c);
+ }
+ let sx=0,sy=0,ox=0,oy=0,moved=false;
+ c.addEventListener('pointerdown',e=>{
+  if(e.button>0)return; c.setPointerCapture(e.pointerId);
+  const r=c.getBoundingClientRect(),fixed=c.classList.contains('fixed'),pr=fixed?{left:0,top:0}:content.getBoundingClientRect();
+  sx=e.clientX;sy=e.clientY;ox=r.left-pr.left;oy=r.top-pr.top;moved=false;
+  clearTimeout(catLeave);
+ });
+ c.addEventListener('pointermove',e=>{
+  if(!c.hasPointerCapture(e.pointerId))return;
+  const dx=e.clientX-sx,dy=e.clientY-sy;
+  if(!moved&&Math.hypot(dx,dy)<6)return;
+  moved=true; c.classList.add('drag');
+  const fixed=c.classList.contains('fixed'),W=fixed?innerWidth:content.clientWidth,H=fixed?innerHeight:content.scrollHeight;
+  c.style.bottom='auto';
+  c.style.left=Math.max(0,Math.min(ox+dx,W-c.offsetWidth))+'px';
+  c.style.top=Math.max(0,Math.min(oy+dy,H-c.offsetHeight))+'px';
+ });
+ c.addEventListener('pointerup',()=>{c.classList.remove('drag');if(moved){moved=false;catArmLeave(c);}else catSwat();});
+ c.addEventListener('pointercancel',()=>{c.classList.remove('drag');moved=false;catArmLeave(c);});
+ c.addEventListener('click',e=>{if(e.detail===0)catSwat();});   // 鍵盤（Enter／空白鍵）也能拍走
+ catEl=c; catArmLeave(c);
+}
+function catSchedule(){
+ clearTimeout(catTimer); catRemove();
+ if(catSS('rms_cat_quiet')==='1'||Math.random()>0.4)return;   // 偶爾才出現
+ catTimer=setTimeout(()=>{
+  const busy=document.hidden||document.body.classList.contains('open')||document.getElementById('wn').classList.contains('show')
+   ||document.getElementById('lb').classList.contains('show')||document.activeElement===q;
+  if(!busy)catSpawn(Math.random()<.65?'title':'corner');
+ },3500+Math.random()*8000);
+}
+function catCall(){catSS('rms_cat_quiet','');catSpawn('title');}
 function home(){const g=groups();let h='<div class="home-hero"><h1>MapleRoyals 攻略庫</h1>'+
  '<p>原站 mapleroyals.net 已關站，以下為自網際網路檔案館救回的公開攻略，共 '+DATA.length+' 篇。左側點選或搜尋。</p></div><div class="cards">';
  cats(g).forEach(c=>{h+='<div class="card"><h2><span>'+c+'</span><span class="c">'+g[c].length+' 篇</span></h2>'+
   '<p class="dsc">'+(DESC[c]||'')+'</p><ul>'+
   g[c].map(d=>'<li><a href="#'+d.slug+'">'+d.title+'</a></li>').join('')+'</ul></div>';});
  content.innerHTML=h+'</div>';document.title='RMS 攻略庫 · MapleRoyals';
- bounceTitle(content.querySelector('.home-hero h1'));
+ bounceTitle(content.querySelector('.home-hero h1'));catSchedule();
  document.querySelector('#bar strong').textContent='RMS 攻略庫';}
 function show(slug){const d=DATA.find(x=>x.slug===slug);if(!d){home();return;}
  const i=flat.indexOf(d),prev=flat[i-1],next=flat[i+1];
@@ -440,7 +553,7 @@ function show(slug){const d=DATA.find(x=>x.slug===slug);if(!d){home();return;}
   '<h1 class="t">'+d.title+'</h1><p class="meta">'+(d.ts?'存檔日期 '+d.ts:'')+
   (d.wb?' · <a href="https://wiki.royals.ms/items" target="_blank" rel="noopener">道具資料（wiki.royals.ms）↗</a>':'')+'</p>'+d.html+pg;
  content.querySelectorAll('img').forEach(im=>{im.loading='lazy';im.onerror=()=>{im.style.display='none';};});
- bounceTitle(content.querySelector('h1.t'));
+ bounceTitle(content.querySelector('h1.t'));catSchedule();
 
  if(slug==='tool-price-ocr')initOcr(content);
  document.title=d.title+' · RMS 攻略庫';document.querySelector('#bar strong').textContent=d.title;
@@ -543,8 +656,11 @@ document.addEventListener('click',e=>{
  const h=a.getAttribute('href')||'';
  if(/^https?:\/\//i.test(h)){e.preventDefault();t.opener.openUrl(h);}
 },true);
+/* 叫貓咪：點標題（沒有貓時），或側欄按鈕 */
+content.addEventListener('click',e=>{const t=e.target.closest&&e.target.closest('h1.t,.home-hero h1');if(t&&!catEl)catCall();});
+document.getElementById('catbtn').onclick=()=>{document.body.classList.remove('open');catCall();toast('喵～',1200);};
 /* ---- 更新內容（OTA）：更新後第一次開啟時顯示尚未看過的版本；側欄「更新紀錄」可隨時查看全部 ---- */
-const CHANGELOG=[{"id": "2026-10-26", "date": "2026-10-26", "title": "手勢、NPC 連結與新文章", "items": [{"tag": "新功能", "text": "手機上看文章時，左右滑動可以切換上一篇／下一篇。從螢幕左邊緣向右滑，仍然是打開側欄。"}, {"tag": "新功能", "text": "每一頁的標題進來時會逐字彈跳。如果裝置開啟「減少動態效果」，就不會有動畫。"}, {"tag": "新功能", "text": "攻略裡的 NPC 名稱可以點了，會直接連到 wiki 的 NPC 頁（目前涵蓋近 60 個 NPC，分布在 23 頁）。"}, {"tag": "新文章", "text": "〈不洗點也能玩：HP 洗點在 2024 還需要嗎？〉：任務與裝備可以拿到的 HP，以及各階段預估 HP 表。"}, {"tag": "新文章", "text": "〈購買炎魔頭盔（Zhelm）指南〉：HP 需求、藥水、找隊伍與戰鬥流程。以上兩篇在「論壇攻略」，都是中文整理。"}, {"tag": "新功能", "text": "側欄新增「更新紀錄」，隨時可以回來看每一版改了什麼。"}]}];
+const CHANGELOG=[{"id": "2026-10-26-cats", "date": "2026-10-26", "title": "貓咪來了", "items": [{"tag": "新功能", "text": "整個網站加上橘色虎斑貓：側欄標題有貓臉，段落標題前有貓掌，回到頂部的按鈕變成貓頭。"}, {"tag": "新功能", "text": "貓咪偶爾會跳出來：有時坐在標題上，擋住幾個字；有時從畫面左下角探頭。牠是浮在頁面上的，不會推動排版。"}, {"tag": "新功能", "text": "點一下貓咪，可以把牠拍走；按住拖曳，可以把牠移到別處。想再看到牠，點頁面的標題，或點側欄的「叫貓咪出來」。"}, {"tag": "調整", "text": "拍走之後，這個分頁不會再自己跑出來，直到你叫牠。裝置開啟「減少動態效果」時，貓咪不會眨眼、搖尾巴；列印時貓咪會自動隱藏。"}]}, {"id": "2026-10-26", "date": "2026-10-26", "title": "手勢、NPC 連結與新文章", "items": [{"tag": "新功能", "text": "手機上看文章時，左右滑動可以切換上一篇／下一篇。從螢幕左邊緣向右滑，仍然是打開側欄。"}, {"tag": "新功能", "text": "每一頁的標題進來時會逐字彈跳。如果裝置開啟「減少動態效果」，就不會有動畫。"}, {"tag": "新功能", "text": "攻略裡的 NPC 名稱可以點了，會直接連到 wiki 的 NPC 頁（目前涵蓋近 60 個 NPC，分布在 23 頁）。"}, {"tag": "新文章", "text": "〈不洗點也能玩：HP 洗點在 2024 還需要嗎？〉：任務與裝備可以拿到的 HP，以及各階段預估 HP 表。"}, {"tag": "新文章", "text": "〈購買炎魔頭盔（Zhelm）指南〉：HP 需求、藥水、找隊伍與戰鬥流程。以上兩篇在「論壇攻略」，都是中文整理。"}, {"tag": "新功能", "text": "側欄新增「更新紀錄」，隨時可以回來看每一版改了什麼。"}]}];
 (function(){
  if(!CHANGELOG.length)return;
  const wn=document.getElementById('wn'),box=wn.querySelector('.box'),btn=document.getElementById('wnbtn');
@@ -554,7 +670,7 @@ const CHANGELOG=[{"id": "2026-10-26", "date": "2026-10-26", "title": "手勢、N
  function render(list,title){
   box.textContent='';
   const bd=document.createElement('div');bd.className='bd';box.appendChild(bd);
-  const h=document.createElement('h2');h.textContent=title;bd.appendChild(h);
+  const h=document.createElement('h2');h.innerHTML='<svg class="cat-ico" aria-hidden="true"><use href="#cat-face"/></svg>';h.appendChild(document.createTextNode(title));bd.appendChild(h);
   const p=document.createElement('p');p.className='ver';p.textContent='目前版本 '+latest;bd.appendChild(p);
   list.forEach(e=>{
    const t=document.createElement('h3');t.textContent=e.title+'（'+e.date+'）';bd.appendChild(t);
