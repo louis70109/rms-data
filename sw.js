@@ -24,7 +24,10 @@ const CORE_URLS = [
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CORE_CACHE).then((c) => c.addAll(CORE_URLS)).then(() => self.skipWaiting())
+    caches.open(CORE_CACHE)
+      // cache:"reload" 略過瀏覽器 HTTP 快取，確保殼一定是伺服器上的最新版
+      .then((c) => c.addAll(CORE_URLS.map((u) => new Request(u, { cache: "reload" }))))
+      .then(() => self.skipWaiting())
   );
 });
 
@@ -47,7 +50,8 @@ self.addEventListener("fetch", (event) => {
   // 導覽（含 #hash 路由）與 index：網路優先
   if (req.mode === "navigate" || url.pathname.endsWith("/") || url.pathname.endsWith("/index.html")) {
     event.respondWith(
-      fetch(req)
+      // cache:"no-cache" 每次都向伺服器驗證，不吃瀏覽器 HTTP 快取的舊 index.html
+      fetch(req, { cache: "no-cache" })
         .then((res) => {
           const copy = res.clone();
           caches.open(CORE_CACHE).then((c) => c.put("index.html", copy));
