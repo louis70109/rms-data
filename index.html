@@ -203,9 +203,11 @@ details.spoiler>*:last-child{padding-bottom:12px}
 #catbtn,#wnbtn{padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:none;
  color:var(--sideink);font:inherit;font-size:13.5px;cursor:pointer}
 #catbtn:hover,#wnbtn:hover{background:var(--sidehover)}
-#catbtn{margin:auto 12px 8px}
-#wnbtn{margin:0 12px 16px}
-#side:has(#install:not([hidden])) #wnbtn{margin-bottom:8px}
+#sidefoot{position:sticky;bottom:0;margin-top:auto;display:flex;flex-direction:column;background:var(--side);
+ padding:10px 0 calc(12px + env(safe-area-inset-bottom));z-index:2}
+#catbtn{margin:0 12px 8px}
+#wnbtn{margin:0 12px}
+#install{margin:8px 12px 0}
 #wn{position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.55)}
 #wn.show{display:flex}
 #wn .box{background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:16px;max-width:520px;width:100%;
@@ -358,6 +360,8 @@ details.spoiler>*:last-child{padding-bottom:12px}
 /* 手機／窄螢幕：側欄收為抽屜 */
 @media(max-width:820px){
  #side{position:fixed;left:-86vw;width:84vw;max-width:320px;z-index:30;transition:left .22s;box-shadow:0 0 30px rgba(0,0,0,.45)}
+ /* 抽屜高度改用 top/bottom 貼齊實際可視區：手機的 100vh 比看得到的高（網址列、主畫面指示條），會把底部按鈕切掉、捲不到 */
+ #side{top:0;bottom:0;height:auto}
  body.open #side{left:0}
  #bar{display:flex}
  #bar strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -438,9 +442,11 @@ details.spoiler[open]>summary{border-bottom:0}
   <div id="brand"><div><div class="bn"><svg class="cat-ico" aria-hidden="true"><use href="#cat-face"/></svg>RMS 攻略庫</div><p>MapleRoyals · 自 Wayback Machine 備份</p></div><button id="collapse" aria-label="收合側欄" title="收合側欄">«</button></div>
   <input id="q" placeholder="搜尋標題…（按 /）" aria-label="搜尋標題" autocomplete="off">
   <nav id="nav"></nav>
+  <div id="sidefoot">
   <button id="catbtn" type="button"><svg class="cat-ico" aria-hidden="true"><use href="#cat-face"/></svg>叫貓咪出來</button>
   <button id="wnbtn" type="button">更新紀錄</button>
   <button id="install" type="button" hidden>＋ 安裝為 App</button>
+  </div>
 </aside>
 <div id="scrim"></div>
 <div id="toast" role="status" aria-live="polite"></div>
@@ -709,7 +715,7 @@ content.addEventListener('input',e=>{if(e.target.id!=='npcq')return;const v=e.ta
 content.addEventListener('click',e=>{const t=e.target.closest&&e.target.closest('h1.t,.home-hero h1');if(t&&!catEl)catCall();});
 document.getElementById('catbtn').onclick=()=>{document.body.classList.remove('open');catCall();toast('喵～',1200);};
 /* ---- 更新內容（OTA）：更新後第一次開啟時顯示尚未看過的版本；側欄「更新紀錄」可隨時查看全部 ---- */
-const CHANGELOG=[{"id": "2026-10-29-look", "date": "2026-10-29", "title": "介面更清爽", "items": [{"tag": "調整", "text": "首頁改版：標題下一句話說明這是什麼，加上「搜尋攻略」按鈕，分類卡片改為平面色塊，字也更好讀。"}, {"tag": "調整", "text": "全站去掉多餘的陰影與框線，改用底色深淺區分；最小字級調到 13px，淺色文字加深，閱讀更輕鬆。"}, {"tag": "調整", "text": "鍵盤操作時會顯示清楚的焦點框；選單、地點等圖示改為向量圖示。"}]}, {"id": "2026-10-26-ota", "date": "2026-10-26", "title": "更新更即時", "items": [{"tag": "調整", "text": "改善自動更新：打開網站或主畫面 App 時，會直接檢查最新版本，不會再偶爾停在舊內容。"}]}, {"id": "2026-10-26-npc", "date": "2026-10-26", "title": "新增 NPC 圖鑑", "items": [{"tag": "新文章", "text": "側欄新增「NPC 圖鑑」：收錄攻略裡提到的 59 位 NPC，每位都有頭像、所在地圖，以及提到牠的文章（可以直接點過去）。"}, {"tag": "新功能", "text": "圖鑑頁上方有搜尋框，可以用 NPC 名稱、地點或文章名稱快速篩選。"}]}, {"id": "2026-10-26-leech", "date": "2026-10-26", "title": "新增 LEECH 分類", "items": [{"tag": "新文章", "text": "側欄新增「LEECH」分類：依等級列出練功地點，分成一般、Farmer、任務、攻擊手、最後一擊、LHC 六種 Leech。"}, {"tag": "新功能", "text": "每個等級區間都附怪物圖片和所在地圖；怪物名稱可以點，直接開 wiki 的怪物頁，也會顯示 wiki 上的怪物等級。"}]}, {"id": "2026-10-26-cats", "date": "2026-10-26", "title": "貓咪來了", "items": [{"tag": "新功能", "text": "整個網站加上橘色虎斑貓：側欄標題有貓臉，段落標題前有貓掌，回到頂部的按鈕變成貓頭。"}, {"tag": "新功能", "text": "貓咪偶爾會跳出來：有時坐在標題上，擋住幾個字；有時從畫面左下角探頭。牠是浮在頁面上的，不會推動排版。"}, {"tag": "新功能", "text": "點一下貓咪，可以把牠拍走；按住拖曳，可以把牠移到別處。想再看到牠，點頁面的標題，或點側欄的「叫貓咪出來」。"}, {"tag": "調整", "text": "拍走之後，這個分頁不會再自己跑出來，直到你叫牠。裝置開啟「減少動態效果」時，貓咪不會眨眼、搖尾巴；列印時貓咪會自動隱藏。"}]}, {"id": "2026-10-26", "date": "2026-10-26", "title": "手勢、NPC 連結與新文章", "items": [{"tag": "新功能", "text": "手機上看文章時，左右滑動可以切換上一篇／下一篇。從螢幕左邊緣向右滑，仍然是打開側欄。"}, {"tag": "新功能", "text": "每一頁的標題進來時會逐字彈跳。如果裝置開啟「減少動態效果」，就不會有動畫。"}, {"tag": "新功能", "text": "攻略裡的 NPC 名稱可以點了，會直接連到 wiki 的 NPC 頁（目前涵蓋近 60 個 NPC，分布在 23 頁）。"}, {"tag": "新文章", "text": "〈不洗點也能玩：HP 洗點在 2024 還需要嗎？〉：任務與裝備可以拿到的 HP，以及各階段預估 HP 表。"}, {"tag": "新文章", "text": "〈購買炎魔頭盔（Zhelm）指南〉：HP 需求、藥水、找隊伍與戰鬥流程。以上兩篇在「論壇攻略」，都是中文整理。"}, {"tag": "新功能", "text": "側欄新增「更新紀錄」，隨時可以回來看每一版改了什麼。"}]}];
+const CHANGELOG=[{"id": "2026-10-29-side", "date": "2026-10-29", "title": "修正側邊欄", "items": [{"tag": "修正", "text": "修正手機（含主畫面 App）側邊欄捲不到最下面、點不到「更新紀錄」的問題：下方按鈕現在固定在側邊欄底部，隨時點得到。"}]}, {"id": "2026-10-29-look", "date": "2026-10-29", "title": "介面更清爽", "items": [{"tag": "調整", "text": "首頁改版：標題下一句話說明這是什麼，加上「搜尋攻略」按鈕，分類卡片改為平面色塊，字也更好讀。"}, {"tag": "調整", "text": "全站去掉多餘的陰影與框線，改用底色深淺區分；最小字級調到 13px，淺色文字加深，閱讀更輕鬆。"}, {"tag": "調整", "text": "鍵盤操作時會顯示清楚的焦點框；選單、地點等圖示改為向量圖示。"}]}, {"id": "2026-10-26-ota", "date": "2026-10-26", "title": "更新更即時", "items": [{"tag": "調整", "text": "改善自動更新：打開網站或主畫面 App 時，會直接檢查最新版本，不會再偶爾停在舊內容。"}]}, {"id": "2026-10-26-npc", "date": "2026-10-26", "title": "新增 NPC 圖鑑", "items": [{"tag": "新文章", "text": "側欄新增「NPC 圖鑑」：收錄攻略裡提到的 59 位 NPC，每位都有頭像、所在地圖，以及提到牠的文章（可以直接點過去）。"}, {"tag": "新功能", "text": "圖鑑頁上方有搜尋框，可以用 NPC 名稱、地點或文章名稱快速篩選。"}]}, {"id": "2026-10-26-leech", "date": "2026-10-26", "title": "新增 LEECH 分類", "items": [{"tag": "新文章", "text": "側欄新增「LEECH」分類：依等級列出練功地點，分成一般、Farmer、任務、攻擊手、最後一擊、LHC 六種 Leech。"}, {"tag": "新功能", "text": "每個等級區間都附怪物圖片和所在地圖；怪物名稱可以點，直接開 wiki 的怪物頁，也會顯示 wiki 上的怪物等級。"}]}, {"id": "2026-10-26-cats", "date": "2026-10-26", "title": "貓咪來了", "items": [{"tag": "新功能", "text": "整個網站加上橘色虎斑貓：側欄標題有貓臉，段落標題前有貓掌，回到頂部的按鈕變成貓頭。"}, {"tag": "新功能", "text": "貓咪偶爾會跳出來：有時坐在標題上，擋住幾個字；有時從畫面左下角探頭。牠是浮在頁面上的，不會推動排版。"}, {"tag": "新功能", "text": "點一下貓咪，可以把牠拍走；按住拖曳，可以把牠移到別處。想再看到牠，點頁面的標題，或點側欄的「叫貓咪出來」。"}, {"tag": "調整", "text": "拍走之後，這個分頁不會再自己跑出來，直到你叫牠。裝置開啟「減少動態效果」時，貓咪不會眨眼、搖尾巴；列印時貓咪會自動隱藏。"}]}, {"id": "2026-10-26", "date": "2026-10-26", "title": "手勢、NPC 連結與新文章", "items": [{"tag": "新功能", "text": "手機上看文章時，左右滑動可以切換上一篇／下一篇。從螢幕左邊緣向右滑，仍然是打開側欄。"}, {"tag": "新功能", "text": "每一頁的標題進來時會逐字彈跳。如果裝置開啟「減少動態效果」，就不會有動畫。"}, {"tag": "新功能", "text": "攻略裡的 NPC 名稱可以點了，會直接連到 wiki 的 NPC 頁（目前涵蓋近 60 個 NPC，分布在 23 頁）。"}, {"tag": "新文章", "text": "〈不洗點也能玩：HP 洗點在 2024 還需要嗎？〉：任務與裝備可以拿到的 HP，以及各階段預估 HP 表。"}, {"tag": "新文章", "text": "〈購買炎魔頭盔（Zhelm）指南〉：HP 需求、藥水、找隊伍與戰鬥流程。以上兩篇在「論壇攻略」，都是中文整理。"}, {"tag": "新功能", "text": "側欄新增「更新紀錄」，隨時可以回來看每一版改了什麼。"}]}];
 (function(){
  if(!CHANGELOG.length)return;
  const wn=document.getElementById('wn'),box=wn.querySelector('.box'),btn=document.getElementById('wnbtn');
