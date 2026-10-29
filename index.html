@@ -432,6 +432,36 @@ details.spoiler[open]>summary{border-bottom:0}
 .grp,button.grp{letter-spacing:0;text-transform:none}
 .itcg-src span,.bo-dl dt{letter-spacing:0;text-transform:none}
 .navlink .d{opacity:.75}
+
+/* ===== 別讓我思考：搜尋結果、首頁常用、本頁目錄 ===== */
+#msearch{margin-left:auto;display:flex;background:none;border:0;color:var(--ink);cursor:pointer;padding:6px}
+.sn{display:block;margin-top:2px;font-size:13px;line-height:1.5;color:var(--sidemut);font-weight:400}
+.sn mark,#content .res mark{background:var(--mark);color:inherit;border-radius:3px;padding:0 1px}
+.navlink:has(.sn){align-items:flex-start}
+.none{padding:12px 16px;color:var(--sideink);font-size:14.5px}
+.none p{margin:.3em 0}
+.none button{margin-top:8px;padding:8px 14px;border-radius:10px;border:1px solid var(--line);background:none;color:var(--sideink);font:inherit;font-size:14px;cursor:pointer}
+#homeform{display:flex;gap:10px;max-width:34em}
+#homeq{flex:1;min-width:0;min-height:48px;padding:0 14px;font:inherit;font-size:16px;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:10px}
+#homeq:focus{outline:2px solid var(--brand);outline-offset:1px}
+#content .qh{margin:30px 0 10px;padding:0;border:0;border-radius:0;background:none;box-shadow:none;font-size:1.05em;color:var(--soft)}
+#content .qh::before{content:none}
+.quick{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px}
+#content .quick a{display:flex;align-items:center;min-height:52px;padding:10px 16px;border-radius:12px;background:var(--card);color:var(--ink);font-weight:600;word-break:normal;text-decoration:none}
+#content .quick a:hover{background:var(--tone)}
+#content a.res{display:block;margin:8px 0;padding:12px 16px;border-radius:12px;background:var(--card);color:var(--ink);word-break:normal;text-decoration:none}
+#content a.res:hover{background:var(--tone)}
+#content a.res .rc{margin-left:8px;font-size:13px;color:var(--soft)}
+#content a.res small{display:block;margin-top:3px;font-size:14px;color:var(--soft);line-height:1.6}
+.resn,.nores{color:var(--soft);margin:14px 0 6px}
+details.toc{margin:0 0 22px;background:var(--card);border-radius:12px}
+details.toc>summary{cursor:pointer;padding:12px 16px;font-weight:600;color:var(--ink);list-style:none;display:flex;align-items:center;gap:8px}
+details.toc>summary::-webkit-details-marker{display:none}
+details.toc>summary::before{content:"\25B8";font-size:12px;transition:transform .15s}
+details.toc[open]>summary::before{transform:rotate(90deg)}
+details.toc .tl{display:flex;flex-direction:column;padding:0 8px 10px}
+details.toc .tl button{text-align:left;background:none;border:0;border-radius:8px;padding:9px 10px;min-height:40px;font:inherit;font-size:15px;color:var(--link);cursor:pointer}
+details.toc .tl button:hover{background:var(--tone)}
 </style></head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
@@ -440,7 +470,7 @@ details.spoiler[open]>summary{border-bottom:0}
 </defs></svg>
 <aside id="side">
   <div id="brand"><div><div class="bn"><svg class="cat-ico" aria-hidden="true"><use href="#cat-face"/></svg>RMS 攻略庫</div><p>MapleRoyals · 自 Wayback Machine 備份</p></div><button id="collapse" aria-label="收合側欄" title="收合側欄">«</button></div>
-  <input id="q" placeholder="搜尋標題…（按 /）" aria-label="搜尋標題" autocomplete="off">
+  <input id="q" placeholder="搜尋攻略…（按 /）" aria-label="搜尋攻略" autocomplete="off">
   <nav id="nav"></nav>
   <div id="sidefoot">
   <button id="catbtn" type="button"><svg class="cat-ico" aria-hidden="true"><use href="#cat-face"/></svg>叫貓咪出來</button>
@@ -451,7 +481,7 @@ details.spoiler[open]>summary{border-bottom:0}
 <div id="scrim"></div>
 <div id="toast" role="status" aria-live="polite"></div>
 <div id="main">
-  <div id="bar"><button id="menu" aria-label="選單"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" fill="none"/></svg></button><strong>RMS 攻略庫</strong></div>
+  <div id="bar"><button id="menu" aria-label="選單"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" fill="none"/></svg></button><strong>RMS 攻略庫</strong><button id="msearch" type="button" aria-label="搜尋"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" stroke="currentColor" stroke-width="2.2" fill="none"/><path d="m15.5 15.5 5 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button></div>
   <article id="content"></article>
 </div>
 <button id="reopen" aria-label="展開側欄" title="展開側欄">☰</button>
@@ -469,16 +499,35 @@ const ORDER=['規則','遊戲指令','經驗需求','LEECH','NPC 圖鑑','前置
 const DESC={'規則':'遊戲規範與題庫','前置任務':'技能、區域與 PQ 的前置條件','轉職':'二～四轉流程','技能書':'各職業技能書掉落','道具':'道具與裝備製作','論壇攻略':'原 royals.ms 論壇精選攻略（英文原文或中文整理）','工具':'實用小工具（本機執行，不上傳資料）','遊戲指令':'玩家可用的指令整理','經驗需求':'各等級的經驗與材料組數','LEECH':'依等級的練功（Leech）地點與怪物','NPC 圖鑑':'攻略裡的 NPC：頭像、地點、出現在哪些文章','青春之泉':'青春之泉任務攻略（+HP）','Reuel HP 任務':'Elixir of Life：Reuel HP 任務重點（120 等以上）','Olaf 任務線':'冒險者的任務（Olaf）十個階段','法師 TMA 一刀表':'法師各技能一刀解怪所需的 TMA'};
 const nav=document.getElementById('nav'),content=document.getElementById('content'),q=document.getElementById('q');
 function groupsAll(){const g={};DATA.forEach(d=>{(g[d.cat]=g[d.cat]||[]).push(d);});return g;}
-function groups(f=''){f=f.trim().toLowerCase();const g={};
- DATA.forEach(d=>{if(f&&!(d.title.toLowerCase().includes(f)||d.cat.toLowerCase().includes(f)))return;
- (g[d.cat]=g[d.cat]||[]).push(d);});return g;}
-function cats(g){return ORDER.filter(c=>g[c]).concat(Object.keys(g).filter(c=>!ORDER.includes(c)));}
+/* 全文搜尋：標題、分類、內文都找；多個詞（空白隔開）必須全部出現。標題命中排前面，內文命中附一小段前後文。 */
+const E=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function plain(h){return h.replace(/<(style|script)[\s\S]*?<\/\1>/gi,' ').replace(/<[^>]+>/g,' ').replace(/&nbsp;/g,' ').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&').replace(/&#?\w+;/g,' ').replace(/\s+/g,' ').trim();}
+function txt(d){return d._t||(d._t=plain(d.html));}
+function hit(d,ws){
+ const t=d.title.toLowerCase(),c=d.cat.toLowerCase(),x=txt(d),xl=d._l||(d._l=x.toLowerCase());
+ if(ws.every(w=>t.includes(w)))return{r:0,s:''};
+ if(ws.every(w=>(t+' '+c).includes(w)))return{r:1,s:''};
+ if(!ws.every(w=>(t+' '+c+' '+xl).includes(w)))return null;
+ const w0=ws.find(w=>xl.includes(w));let s='';
+ if(w0){const i=xl.indexOf(w0),a=Math.max(0,i-16);s=(a?'…':'')+x.slice(a,i+w0.length+40)+'…';}
+ return{r:2,s};}
+function mark(s,ws){let h=E(s);ws.forEach(w=>{if(!w)return;const re=new RegExp(w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi');h=h.replace(re,m=>'<mark>'+m+'</mark>');});return h;}
+function search(f){const ws=f.trim().toLowerCase().split(/\s+/).filter(Boolean);if(!ws.length)return null;
+ const out=[];DATA.forEach(d=>{const h=hit(d,ws);if(h)out.push({d,r:h.r,s:h.s});});
+ out.sort((a,b)=>a.r-b.r);return{ws,list:out};}
+function groups(f=''){const g={};
+ if(!f.trim()){DATA.forEach(d=>{(g[d.cat]=g[d.cat]||[]).push(d);});return g;}
+ const r=search(f);r.list.forEach(x=>{x.d._s=x.s;(g[x.d.cat]=g[x.d.cat]||[]).push(x.d);});g._ws=r.ws;return g;}
+function cats(g){return ORDER.filter(c=>g[c]).concat(Object.keys(g).filter(c=>c!=='_ws'&&!ORDER.includes(c)));}
 const GA=groupsAll(),flat=[];cats(GA).forEach(c=>GA[c].forEach(d=>flat.push(d)));
 function renderNav(f=''){const g=groups(f);nav.innerHTML='';
- if(!cats(g).length){nav.innerHTML='<p class="grp">查無結果</p>';return;}
+ if(!cats(g).length){nav.innerHTML='<div class="none"><p>找不到「'+E(f.trim())+'」。</p><p>試試少打幾個字，或換個說法（例如英文名稱）。</p><button type="button" id="clrq">清除搜尋</button></div>';
+  document.getElementById('clrq').onclick=()=>{q.value='';renderNav('');q.focus();};return;}
  let sv={};try{sv=JSON.parse(localStorage.getItem('rms_grp')||'{}')}catch(e){}
+ const cur=DATA.find(d=>d.slug===location.hash.slice(1).split('~')[0]),act=cur&&cur.cat;
  cats(g).forEach(c=>{
-  const closed=!f&&!!sv[c];
+  /* 搜尋中全部展開；平常只展開目前這篇所在的分類，其他收起來（使用者自己展開過的會記住） */
+  const closed=!f&&c!==act&&(c in sv?!!sv[c]:true);
   const box=document.createElement('section');box.className='grpbox'+(closed?' closed':'');
   const h=document.createElement('button');h.type='button';h.className='grp';h.setAttribute('aria-expanded',String(!closed));
   h.innerHTML='<span class="caret">▾</span><span class="gn">'+c+'</span><span class="c">'+g[c].length+'</span>';
@@ -488,7 +537,7 @@ function renderNav(f=''){const g=groups(f);nav.innerHTML='';
   box.appendChild(h);
   const body=document.createElement('div');body.className='grpbody';
   g[c].forEach(d=>{const a=document.createElement('a');a.className='navlink';a.href='#'+d.slug;
-   a.innerHTML='<span>'+d.title+'</span><span class="d">'+d.ts+'</span>';
+   a.innerHTML=f&&d._s?'<span>'+d.title+'<small class="sn">'+mark(d._s,g._ws)+'</small></span><span class="d">'+d.ts+'</span>':'<span>'+d.title+'</span><span class="d">'+d.ts+'</span>';
    if(location.hash.slice(1).split('~')[0]===d.slug)a.classList.add('active');body.appendChild(a);});
   box.appendChild(body);nav.appendChild(box);});}
 /* 標題逐字彈跳：每個字包成 span；每字佔一個時段（總長約 2.2 秒，字多時每字不少於 .14 秒），只播一輪。省略動畫偏好時不處理。 */
@@ -584,16 +633,36 @@ function catSchedule(){
  },3500+Math.random()*8000);
 }
 function catCall(){catSS('rms_cat_quiet','');catSpawn('title');}
+const QUICK=[['我要做前置任務','pre-overview'],['找練功地點（Leech）','leech-guide'],['這個 NPC 在哪？','npc-gallery'],['怎麼加 HP','static-unwashed-hp'],['法師怎麼洗血','static-mage-hp-wash'],['要轉職了','job-2nd'],['各等級要多少經驗','static-exp-sets'],['BOSS 多久重生','forum-en-bosses']];
+function resHtml(f){const r=search(f);if(!r)return'';
+ if(!r.list.length)return'<p class="nores">找不到「'+E(f.trim())+'」。試試少打幾個字，或換個說法（例如英文名稱）。</p>';
+ return'<p class="resn">找到 '+r.list.length+' 篇</p>'+r.list.map(x=>'<a class="res" href="#'+x.d.slug+'"><b>'+E(x.d.title)+'</b><span class="rc">'+E(x.d.cat)+'</span>'+(x.s?'<small>'+mark(x.s,r.ws)+'</small>':'')+'</a>').join('');}
 function home(){const g=groups();let h='<div class="home-hero"><h1>MapleRoyals 攻略庫</h1>'+
  '<p>前置任務、轉職、技能書、BOSS、LEECH 練功點與 NPC 圖鑑，共 '+DATA.length+' 篇。原站已關閉，內容取自網際網路檔案館。</p>'+
- '<button id="homeq" type="button" class="primary">搜尋攻略</button></div><div class="cards">';
+ '<form id="homeform" role="search"><input id="homeq" type="search" placeholder="想找什麼？例如：洗血、Perzen、EPQ" aria-label="搜尋攻略" autocomplete="off"><button type="submit" class="primary">搜尋</button></form></div>'+
+ '<div id="homeres" hidden></div><div id="homebody"><h2 class="qh">常用</h2><div class="quick">'+
+ QUICK.filter(x=>DATA.some(d=>d.slug===x[1])).map(x=>'<a href="#'+x[1]+'">'+x[0]+'</a>').join('')+
+ '</div><h2 class="qh">全部分類</h2><div class="cards">';
  cats(g).forEach(c=>{h+='<div class="card"><h2><span>'+c+'</span><span class="c">'+g[c].length+' 篇</span></h2>'+
   '<p class="dsc">'+(DESC[c]||'')+'</p><ul>'+
   g[c].map(d=>'<li><a href="#'+d.slug+'">'+d.title+'</a></li>').join('')+'</ul></div>';});
- content.innerHTML=h+'</div>';document.title='RMS 攻略庫 · MapleRoyals';
+ content.innerHTML=h+'</div></div>';document.title='RMS 攻略庫 · MapleRoyals';
  bounceTitle(content.querySelector('.home-hero h1'));catSchedule();
- document.getElementById('homeq').onclick=()=>{document.body.classList.add('open');document.body.classList.remove('collapsed');q.focus();};
+ const hq=document.getElementById('homeq'),hr=document.getElementById('homeres'),hb=document.getElementById('homebody');
+ hq.oninput=()=>{const v=hq.value.trim();hr.hidden=!v;hb.hidden=!!v;hr.innerHTML=v?resHtml(v):'';};
+ document.getElementById('homeform').onsubmit=e=>{e.preventDefault();const a=hr.querySelector('a.res');if(a)location.hash=a.getAttribute('href').slice(1);};
  document.querySelector('#bar strong').textContent='RMS 攻略庫';}
+/* 長文章在標題下放「本頁目錄」：用文章裡的 h2（不夠就用 h3），點了直接捲到那一段 */
+function addToc(d){
+ const pick=t=>[...content.querySelectorAll(t)].filter(h=>!h.closest('.card,details,.qa')&&h.textContent.trim());
+ let hs=pick('h2');if(hs.length<4)hs=pick('h3');
+ if(hs.length<4||txt(d).length<2500)return;
+ const det=document.createElement('details');det.className='toc';if(innerWidth>820)det.open=true;
+ det.innerHTML='<summary>本頁目錄（'+hs.length+' 段）</summary><div class="tl"></div>';
+ const box=det.querySelector('.tl');
+ hs.forEach(h=>{const b=document.createElement('button');b.type='button';b.textContent=h.textContent.trim();
+  b.onclick=()=>h.scrollIntoView({behavior:'smooth',block:'start'});box.appendChild(b);});
+ const m=content.querySelector('.meta');if(m)m.insertAdjacentElement('afterend',det);}
 function show(slug){const d=DATA.find(x=>x.slug===slug);if(!d){home();return;}
  const i=flat.indexOf(d),prev=flat[i-1],next=flat[i+1];
  let pg='<div class="pager">';
@@ -605,7 +674,7 @@ function show(slug){const d=DATA.find(x=>x.slug===slug);if(!d){home();return;}
   (d.wb?' · <a href="https://wiki.royals.ms/items" target="_blank" rel="noopener">道具資料（wiki.royals.ms）↗</a>':'')+'</p>'+d.html+pg;
  content.querySelectorAll('img').forEach(im=>{im.loading='lazy';im.onerror=()=>{im.style.display='none';};});
  bounceTitle(content.querySelector('h1.t'));catSchedule();
-
+ addToc(d);
  if(slug==='tool-price-ocr')initOcr(content);
  document.title=d.title+' · RMS 攻略庫';document.querySelector('#bar strong').textContent=d.title;
  scrollTo(0,0);document.body.classList.remove('open');}
@@ -641,6 +710,10 @@ function initOcr(root){
 }
 function route(){if(ocrPasteH){document.removeEventListener('paste',ocrPasteH);ocrPasteH=null;}const [sl,an]=location.hash.slice(1).split('~');sl?show(sl):home();if(an){const el=document.getElementById(an);if(el)el.scrollIntoView({block:'start'});}renderNav(q.value);}
 addEventListener('hashchange',route);q.addEventListener('input',()=>renderNav(q.value));
+q.addEventListener('keydown',e=>{
+ if(e.key==='Enter'){const a=nav.querySelector('.navlink');if(a){location.hash=a.getAttribute('href').slice(1);q.blur();}}
+ if(e.key==='Escape'){q.value='';renderNav('');}});
+document.getElementById('msearch').onclick=()=>{document.body.classList.add('open');setTimeout(()=>q.focus(),120);};
 document.getElementById('menu').onclick=()=>document.body.classList.toggle('open');
 document.getElementById('scrim').onclick=()=>document.body.classList.remove('open');
 /* 手機滑動開關側欄：左邊緣向右滑打開；側欄內向左滑關閉（水平距離夠大、且比垂直距離大才算） */
@@ -675,7 +748,7 @@ lb.onclick=()=>lb.classList.remove('show');
 content.addEventListener('click',e=>{const j=e.target.closest('[data-jump]');
  if(j){const t=document.getElementById(j.dataset.jump);if(t)t.scrollIntoView({behavior:'smooth',block:'start'});}});
 addEventListener('keydown',e=>{if(e.key==='Escape')lb.classList.remove('show');
- if(e.key==='/'&&document.activeElement!==q){e.preventDefault();q.focus();}});
+ if(e.key==='/'&&!/^(INPUT|TEXTAREA|SELECT)$/.test((document.activeElement||{}).tagName||'')){e.preventDefault();q.focus();}});
 renderNav();route();
 /* 手機左右滑動切換上/下篇：窄螢幕、在文章頁才生效；從左邊緣開始的滑動留給側欄；表格等可橫向捲動的區域不觸發 */
 (function(){
@@ -715,7 +788,7 @@ content.addEventListener('input',e=>{if(e.target.id!=='npcq')return;const v=e.ta
 content.addEventListener('click',e=>{const t=e.target.closest&&e.target.closest('h1.t,.home-hero h1');if(t&&!catEl)catCall();});
 document.getElementById('catbtn').onclick=()=>{document.body.classList.remove('open');catCall();toast('喵～',1200);};
 /* ---- 更新內容（OTA）：更新後第一次開啟時顯示尚未看過的版本；側欄「更新紀錄」可隨時查看全部 ---- */
-const CHANGELOG=[{"id": "2026-10-29-mage-wash", "date": "2026-10-29", "title": "新增法師洗血教學", "items": [{"tag": "新文章", "text": "「論壇攻略」新增《法師洗血教學（玩家分享）》：HP 門檻、魔力擴展的用法、LV90～197 的實測數據、各等級 AP 使用量，附上 24 張原文截圖。"}]}, {"id": "2026-10-29-side", "date": "2026-10-29", "title": "修正側邊欄", "items": [{"tag": "修正", "text": "修正手機（含主畫面 App）側邊欄捲不到最下面、點不到「更新紀錄」的問題：下方按鈕現在固定在側邊欄底部，隨時點得到。"}]}, {"id": "2026-10-29-look", "date": "2026-10-29", "title": "介面更清爽", "items": [{"tag": "調整", "text": "首頁改版：標題下一句話說明這是什麼，加上「搜尋攻略」按鈕，分類卡片改為平面色塊，字也更好讀。"}, {"tag": "調整", "text": "全站去掉多餘的陰影與框線，改用底色深淺區分；最小字級調到 13px，淺色文字加深，閱讀更輕鬆。"}, {"tag": "調整", "text": "鍵盤操作時會顯示清楚的焦點框；選單、地點等圖示改為向量圖示。"}]}, {"id": "2026-10-26-ota", "date": "2026-10-26", "title": "更新更即時", "items": [{"tag": "調整", "text": "改善自動更新：打開網站或主畫面 App 時，會直接檢查最新版本，不會再偶爾停在舊內容。"}]}, {"id": "2026-10-26-npc", "date": "2026-10-26", "title": "新增 NPC 圖鑑", "items": [{"tag": "新文章", "text": "側欄新增「NPC 圖鑑」：收錄攻略裡提到的 59 位 NPC，每位都有頭像、所在地圖，以及提到牠的文章（可以直接點過去）。"}, {"tag": "新功能", "text": "圖鑑頁上方有搜尋框，可以用 NPC 名稱、地點或文章名稱快速篩選。"}]}, {"id": "2026-10-26-leech", "date": "2026-10-26", "title": "新增 LEECH 分類", "items": [{"tag": "新文章", "text": "側欄新增「LEECH」分類：依等級列出練功地點，分成一般、Farmer、任務、攻擊手、最後一擊、LHC 六種 Leech。"}, {"tag": "新功能", "text": "每個等級區間都附怪物圖片和所在地圖；怪物名稱可以點，直接開 wiki 的怪物頁，也會顯示 wiki 上的怪物等級。"}]}, {"id": "2026-10-26-cats", "date": "2026-10-26", "title": "貓咪來了", "items": [{"tag": "新功能", "text": "整個網站加上橘色虎斑貓：側欄標題有貓臉，段落標題前有貓掌，回到頂部的按鈕變成貓頭。"}, {"tag": "新功能", "text": "貓咪偶爾會跳出來：有時坐在標題上，擋住幾個字；有時從畫面左下角探頭。牠是浮在頁面上的，不會推動排版。"}, {"tag": "新功能", "text": "點一下貓咪，可以把牠拍走；按住拖曳，可以把牠移到別處。想再看到牠，點頁面的標題，或點側欄的「叫貓咪出來」。"}, {"tag": "調整", "text": "拍走之後，這個分頁不會再自己跑出來，直到你叫牠。裝置開啟「減少動態效果」時，貓咪不會眨眼、搖尾巴；列印時貓咪會自動隱藏。"}]}, {"id": "2026-10-26", "date": "2026-10-26", "title": "手勢、NPC 連結與新文章", "items": [{"tag": "新功能", "text": "手機上看文章時，左右滑動可以切換上一篇／下一篇。從螢幕左邊緣向右滑，仍然是打開側欄。"}, {"tag": "新功能", "text": "每一頁的標題進來時會逐字彈跳。如果裝置開啟「減少動態效果」，就不會有動畫。"}, {"tag": "新功能", "text": "攻略裡的 NPC 名稱可以點了，會直接連到 wiki 的 NPC 頁（目前涵蓋近 60 個 NPC，分布在 23 頁）。"}, {"tag": "新文章", "text": "〈不洗點也能玩：HP 洗點在 2024 還需要嗎？〉：任務與裝備可以拿到的 HP，以及各階段預估 HP 表。"}, {"tag": "新文章", "text": "〈購買炎魔頭盔（Zhelm）指南〉：HP 需求、藥水、找隊伍與戰鬥流程。以上兩篇在「論壇攻略」，都是中文整理。"}, {"tag": "新功能", "text": "側欄新增「更新紀錄」，隨時可以回來看每一版改了什麼。"}]}];
+const CHANGELOG=[{"id": "2026-10-29-easy", "date": "2026-10-29", "title": "更好找、更好用", "items": [{"tag": "新功能", "text": "搜尋現在會找文章內文，不只標題：輸入「洗血」「Perzen」都能找到，結果還會附上關鍵字前後的句子，多個詞用空格隔開會一起比對。"}, {"tag": "新功能", "text": "首頁最上面就是搜尋框，下面是「常用」捷徑：前置任務、練功地點、NPC 在哪、怎麼加 HP、轉職、經驗、BOSS 重生時間。"}, {"tag": "新功能", "text": "長文章標題下面多了「本頁目錄」，點一下直接跳到那一段。"}, {"tag": "調整", "text": "側邊欄預設只展開目前文章所在的分類，其他收起來，不用再一直往下捲；手機頂端也多了搜尋按鈕。"}]}, {"id": "2026-10-29-mage-wash", "date": "2026-10-29", "title": "新增法師洗血教學", "items": [{"tag": "新文章", "text": "「論壇攻略」新增《法師洗血教學（玩家分享）》：HP 門檻、魔力擴展的用法、LV90～197 的實測數據、各等級 AP 使用量，附上 24 張原文截圖。"}]}, {"id": "2026-10-29-side", "date": "2026-10-29", "title": "修正側邊欄", "items": [{"tag": "修正", "text": "修正手機（含主畫面 App）側邊欄捲不到最下面、點不到「更新紀錄」的問題：下方按鈕現在固定在側邊欄底部，隨時點得到。"}]}, {"id": "2026-10-29-look", "date": "2026-10-29", "title": "介面更清爽", "items": [{"tag": "調整", "text": "首頁改版：標題下一句話說明這是什麼，加上「搜尋攻略」按鈕，分類卡片改為平面色塊，字也更好讀。"}, {"tag": "調整", "text": "全站去掉多餘的陰影與框線，改用底色深淺區分；最小字級調到 13px，淺色文字加深，閱讀更輕鬆。"}, {"tag": "調整", "text": "鍵盤操作時會顯示清楚的焦點框；選單、地點等圖示改為向量圖示。"}]}, {"id": "2026-10-26-ota", "date": "2026-10-26", "title": "更新更即時", "items": [{"tag": "調整", "text": "改善自動更新：打開網站或主畫面 App 時，會直接檢查最新版本，不會再偶爾停在舊內容。"}]}, {"id": "2026-10-26-npc", "date": "2026-10-26", "title": "新增 NPC 圖鑑", "items": [{"tag": "新文章", "text": "側欄新增「NPC 圖鑑」：收錄攻略裡提到的 59 位 NPC，每位都有頭像、所在地圖，以及提到牠的文章（可以直接點過去）。"}, {"tag": "新功能", "text": "圖鑑頁上方有搜尋框，可以用 NPC 名稱、地點或文章名稱快速篩選。"}]}, {"id": "2026-10-26-leech", "date": "2026-10-26", "title": "新增 LEECH 分類", "items": [{"tag": "新文章", "text": "側欄新增「LEECH」分類：依等級列出練功地點，分成一般、Farmer、任務、攻擊手、最後一擊、LHC 六種 Leech。"}, {"tag": "新功能", "text": "每個等級區間都附怪物圖片和所在地圖；怪物名稱可以點，直接開 wiki 的怪物頁，也會顯示 wiki 上的怪物等級。"}]}, {"id": "2026-10-26-cats", "date": "2026-10-26", "title": "貓咪來了", "items": [{"tag": "新功能", "text": "整個網站加上橘色虎斑貓：側欄標題有貓臉，段落標題前有貓掌，回到頂部的按鈕變成貓頭。"}, {"tag": "新功能", "text": "貓咪偶爾會跳出來：有時坐在標題上，擋住幾個字；有時從畫面左下角探頭。牠是浮在頁面上的，不會推動排版。"}, {"tag": "新功能", "text": "點一下貓咪，可以把牠拍走；按住拖曳，可以把牠移到別處。想再看到牠，點頁面的標題，或點側欄的「叫貓咪出來」。"}, {"tag": "調整", "text": "拍走之後，這個分頁不會再自己跑出來，直到你叫牠。裝置開啟「減少動態效果」時，貓咪不會眨眼、搖尾巴；列印時貓咪會自動隱藏。"}]}, {"id": "2026-10-26", "date": "2026-10-26", "title": "手勢、NPC 連結與新文章", "items": [{"tag": "新功能", "text": "手機上看文章時，左右滑動可以切換上一篇／下一篇。從螢幕左邊緣向右滑，仍然是打開側欄。"}, {"tag": "新功能", "text": "每一頁的標題進來時會逐字彈跳。如果裝置開啟「減少動態效果」，就不會有動畫。"}, {"tag": "新功能", "text": "攻略裡的 NPC 名稱可以點了，會直接連到 wiki 的 NPC 頁（目前涵蓋近 60 個 NPC，分布在 23 頁）。"}, {"tag": "新文章", "text": "〈不洗點也能玩：HP 洗點在 2024 還需要嗎？〉：任務與裝備可以拿到的 HP，以及各階段預估 HP 表。"}, {"tag": "新文章", "text": "〈購買炎魔頭盔（Zhelm）指南〉：HP 需求、藥水、找隊伍與戰鬥流程。以上兩篇在「論壇攻略」，都是中文整理。"}, {"tag": "新功能", "text": "側欄新增「更新紀錄」，隨時可以回來看每一版改了什麼。"}]}];
 (function(){
  if(!CHANGELOG.length)return;
  const wn=document.getElementById('wn'),box=wn.querySelector('.box'),btn=document.getElementById('wnbtn');
