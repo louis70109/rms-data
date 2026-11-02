@@ -1,15 +1,18 @@
 /*
- * quiz-ocr.js — 讀取遊戲裡 Shanks「安全冒險」(Safe Adventures) 題目截圖，對照乖寶寶題庫找出答案。
+ * quiz-ocr.js — 讀取遊戲截圖並對照站內資料。目前認兩種：
+ *   1. Shanks「安全冒險」(Safe Adventures) 題目 → 乖寶寶題庫的答案
+ *   2. Reuel「Search for the Elixir of Life」HP 任務對話 → 是哪個地區的任務、要打哪幾隻怪物
  *
  * 瀏覽器：<script src="tesseract.min.js"></script><script src="quiz-ocr.js"></script>
  *         const bank = QuizOCR.parseBank(乖寶寶題庫頁的 HTML);
- *         const r = await QuizOCR.analyze(blobOrCanvasOrImg, { worker, bank });
- * Node：  const r = await QuizOCR.analyze(path, { worker, bank, env })  （env 見 test-quiz.js）
+ *         const quests = QuizOCR.parseQuests(Reuel HP 任務頁的 HTML);
+ *         const r = await QuizOCR.analyze(blobOrCanvasOrImg, { worker, bank, quests });
+ * Node：  const r = await QuizOCR.analyze(path, { worker, bank, quests, env })  （env 見 test-quiz.js）
  *
- * 回傳：{ ok, item, qScore, aScore, answerBox, candidates[], lines[], width, height }
- *   item        題庫那題 { n, qEn, qZh, aEn, aZh }
- *   answerBox   答案選項在原圖裡的位置 { x0, y0, x1, y1 }（原圖像素），找不到時是 null
- *   candidates  最像的前三題（ok 為 false 時讓使用者自己挑）
+ * 回傳：{ type: 'quiz' | 'quest' | 'none', ok, lines[], width, height, ... }
+ *   type 'quiz'  → item { n, qEn, qZh, aEn, aZh }、qScore、aScore、answerBox（答案選項在原圖的位置，找不到是 null）、candidates[]
+ *   type 'quest' → quest { id, region, place, minutes, items[], mobs[] }、itemsHit、mobsHit、itemBoxes[]
+ *   type 'none'  → 都不像；candidates[] 是最像的前三題（讓使用者自己挑）
  *
  * 做法：整張圖 OCR → 把相鄰幾行合成「視窗」→ 用字元三連詞 Dice 相似度比對題目與答案。
  * 題目文字和選項不必逐字相同；OCR 把 I 讀成 | 、漏掉空白都沒關係。
@@ -127,6 +130,67 @@
     };
   }
 
+  // ---------- Reuel HP 任務 ----------
+  // Reuel HP 任務頁（gen_elixir.py 產生）每張卡片：
+  // <div class="elx-card" id="elx-west-minar-forest"><div class="elx-reg">Leafre</div><h4>West Minar Forest</h4>
+  //   道具 <span class="elx-item"><img src="…" alt="Rash Twig"><span class="elx-cnt">×30</span></span> …
+  //   怪物 <span class="elx-item elx-mob"><img src="…" alt="Hobi"><span class="elx-mn">Hobi</span></span> …
+  //   <div class="elx-time">約 9 分鐘（不含移動）</div></div>
+  function parseQuests(html) {
+    const out = [];
+    const parts = String(html).split('<div class="elx-card"').slice(1);
+    for (const part of parts) {
+      const id = (part.match(/^\s*id="([^"]+)"/) || [])[1];
+      if (!id) continue;
+      const region = strip((part.match(/<div class="elx-reg">([\s\S]*?)<\/div>/) || [])[1]);
+      const place = strip((part.match(/<h4>([\s\S]*?)<\/h4>/) || [])[1]);
+      const minutes = +((part.match(/約\s*(\d+)\s*分鐘/) || [])[1]) || 0;
+      const items = [], mobs = [];
+      const re = /<span class="elx-item( elx-mob)?"><img src="([^"]*)" alt="([^"]*)"[^>]*>(?:<span class="elx-cnt">×(\d+)<\/span>)?/g;
+      let m;
+      while ((m = re.exec(part))) {
+        const o = { name: decode(m[3]), img: m[2] };
+        if (m[1]) mobs.push(o); else items.push(Object.assign(o, { count: m[4] ? +m[4] : 0 }));
+      }
+      if (items.length) out.push({ id, region, place, minutes, items, mobs });
+    }
+    return out;
+  }
+
+  // 一段文字裡有沒有這個名字：先看整段（空白拿掉後）是否包含；OCR 有錯字時，用同長度的滑動視窗比相似度。
+  function findIn(hay, name) {
+    const t = compact(name);
+    if (t.length < 3) return hay.includes(t);
+    if (hay.includes(t)) return true;
+    const L = t.length;
+    if (L < 6) return false;               // 太短的名字不做模糊比對，免得亂中
+    for (let i = 0; i + L - 2 <= hay.length; i++) {
+      if (dice(t, hay.slice(i, i + L)) >= 0.8) return true;
+    }
+    return false;
+  }
+
+  function matchQuest(lines, quests) {
+    const hay = compact(lines.map((l) => l.text).join(' '));
+    const wins = windows(lines.filter((l) => compact(l.text).length >= 2).slice(0));
+    const flines = lines.filter((l) => compact(l.text).length >= 2);
+    const scored = quests.map((q) => {
+      const itemHits = q.items.map((it) => {
+        const b = best(wins, compact(it.name));
+        return { it, ok: findIn(hay, it.name) || b.s >= 0.8, box: b.s >= 0.8 && b.w ? boxOf(flines, b.w) : null };
+      });
+      const mobsHit = q.mobs.filter((m) => findIn(hay, m.name)).length;
+      const itemsHit = itemHits.filter((x) => x.ok).length;
+      return { q, itemsHit, mobsHit, score: itemsHit + 0.7 * mobsHit, itemBoxes: itemHits.filter((x) => x.ok && x.box).map((x) => ({ name: x.it.name, box: x.box })) };
+    }).sort((a, b) => b.score - a.score);
+    const top = scored[0];
+    const titled = /elixir\s*of\s*life/.test(hay) || /searchfortheelixir/.test(hay);
+    const ok = !!top && (top.itemsHit >= 2 || (top.itemsHit >= 1 && top.mobsHit >= 2) || top.mobsHit >= 3 || (titled && top.score >= 1));
+    // 兩個任務同分（例如共用怪物）就不敢確定
+    const tie = ok && scored[1] && scored[1].score >= top.score - 0.01 && scored[1].itemsHit === top.itemsHit && top.itemsHit < 2;
+    return { ok: ok && !tie, titled, top, candidates: scored.slice(0, 3) };
+  }
+
   // ---------- 影像前處理與 OCR ----------
   // 放大 + 取三個色版的最小值當灰階：藍色、紅色、黑色字都變深色，白底和淺灰底還是亮的。
   function preprocess(env, img) {
@@ -150,10 +214,21 @@
       text: l.text.replace(/\s+/g, ' ').trim(),
       bbox: { x0: l.bbox.x0 / SCALE, y0: l.bbox.y0 / SCALE, x1: l.bbox.x1 / SCALE, y1: l.bbox.y1 / SCALE },
     })).filter((l) => l.text);
-    const res = match(lines, opts.bank);
+    const quiz = opts.bank && opts.bank.length ? match(lines, opts.bank) : { ok: false, qScore: 0, aScore: 0, candidates: [], lines };
+    const quest = opts.quests && opts.quests.length ? matchQuest(lines, opts.quests) : { ok: false, top: null, candidates: [] };
+    // 兩種都像時，取信心高的：題目用題目相似度，HP 任務用命中比例
+    const questConf = quest.top ? quest.top.score / (quest.top.q.items.length + 0.7 * quest.top.q.mobs.length) : 0;
+    let res;
+    if (quest.ok && (!quiz.ok || questConf > quiz.qScore)) {
+      res = { type: 'quest', ok: true, quest: quest.top.q, itemsHit: quest.top.itemsHit, mobsHit: quest.top.mobsHit, itemBoxes: quest.top.itemBoxes, titled: quest.titled, lines };
+    } else if (quiz.ok) {
+      res = Object.assign({ type: 'quiz' }, quiz);
+    } else {
+      res = Object.assign({ type: 'none' }, quiz, { ok: false, questCandidates: quest.candidates.filter((c) => c.itemsHit >= 1).map((c) => c.q) });
+    }
     res.width = img.width; res.height = img.height;
     return res;
   }
 
-  return { parseBank, match, analyze, dice, compact, SCALE };
+  return { parseBank, parseQuests, match, matchQuest, analyze, dice, compact, SCALE };
 });
