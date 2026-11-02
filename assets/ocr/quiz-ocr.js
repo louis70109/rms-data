@@ -224,7 +224,7 @@
     } else if (quiz.ok) {
       res = Object.assign({ type: 'quiz' }, quiz);
     } else {
-      res = Object.assign({ type: 'none' }, quiz, { ok: false, questCandidates: quest.candidates.filter((c) => c.itemsHit >= 1).map((c) => c.q) });
+      res = Object.assign({ type: 'none' }, quiz, { ok: false, questCandidates: quest.candidates.filter((c) => c.itemsHit >= 1 && (c.mobsHit >= 1 || quest.titled)).map((c) => c.q) });
     }
     res.width = img.width; res.height = img.height;
     return res;
