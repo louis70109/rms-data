@@ -10,9 +10,9 @@ fs.rmSync(out, { recursive: true, force: true });
 fs.mkdirSync(out, { recursive: true });
 
 fs.copyFileSync(path.join(root, "index.html"), path.join(out, "index.html"));
-// assets/ocr（價格 OCR 的執行檔，約 14 MB）只給線上版用，桌面版不收
+// assets/ocr（OCR 辨識程式，約 14 MB）要一起打包：桌面版的「乖寶寶題目：截圖找答案」要用，
+// 內建之後使用者不用另外下載。價格 OCR 工具在網頁內會被濾掉（見私人 repo 的 build_spa.py）。
 fs.cpSync(path.join(root, "assets"), path.join(out, "assets"), { recursive: true });
-fs.rmSync(path.join(out, "assets", "ocr"), { recursive: true, force: true });
 
 // manifest / sw / assets-manifest 是給瀏覽器 PWA 用的，桌面版不需要（file:// 不註冊 Service Worker）
 let count = 0;

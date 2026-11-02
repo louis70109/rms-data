@@ -30,7 +30,7 @@
 - `assets/apq/`：APQ 攻略圖片。
 - `assets/forum/`：論壇攻略圖片。
 - `assets/icons/`：PWA 圖示。
-- `assets/ocr/`：價格 OCR 的執行檔（**目前不發佈**，見第 5 節）。
+- `assets/ocr/`：OCR 辨識程式（乖寶寶題目：截圖找答案用，見第 5 節）。
 - 網站不可連到 Wayback 或其他外部圖床。
 
 ## 3. 攻略內的連結
@@ -49,16 +49,16 @@
   - 免安裝版：`RMS-Guide-Portable-X.Y.Z.exe`（約 12 MB）。
 - 手動執行：在 Actions 頁面選 `Release desktop app`，輸入版本號。
 - 桌面版內嵌網站內容。**網站更新後，必須推新標籤，桌面版才會更新。**
-- 桌面版不含價格 OCR。`desktop/scripts/prepare-app.js` 會刪掉 `assets/ocr`。
+- 桌面版含乖寶寶題目工具：`desktop/scripts/prepare-app.js` 會保留 `assets/ocr`（安裝檔因此變大，辨識程式內建不用下載）。價格 OCR 不含。
 - 安裝檔沒有程式碼簽章。Windows SmartScreen 會出現警告，使用者需點「其他資訊」再點「仍要執行」。
 - 免安裝版需要 WebView2。Windows 11 與多數 Windows 10 已內建。
 
-## 5. 價格 OCR（目前關閉）
+## 5. OCR 工具
 
-- 開關在私人 repo：`OCR_ENABLED = False`。
-- 關閉時，`assets/ocr/` 不會發佈，側欄也沒有「工具」分類。
-- 開啟時，私人 repo 的 `publish.sh` 會把 `assets/ocr/` 複製過來。**不可手動加入 `assets/ocr/`。**
-- OCR 約 14 MB。只在使用者進入工具頁時才下載，之後由 service worker 快取。
+- 乖寶寶題目：截圖找答案（`tool-quiz-ocr`）：**開啟**。開關在私人 repo：`QUIZ_OCR_ENABLED = True`。
+- 價格 OCR（`tool-price-ocr`）：**關閉**。開關在私人 repo：`OCR_ENABLED = False`。
+- 任一開關開啟時，私人 repo 的 `publish.sh` 會把 `assets/ocr/` 複製過來。**不可手動加入 `assets/ocr/`。**
+- OCR 約 14 MB。網頁版只在使用者進入工具頁時才下載（實際約 8 MB），之後由 service worker 快取；桌面版已內建。
 
 ## 6. PWA
 
