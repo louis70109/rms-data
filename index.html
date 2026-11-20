@@ -429,6 +429,7 @@ details.toc[open]>summary::before{transform:rotate(90deg)}
 details.toc .tl{display:flex;flex-direction:column;padding:0 8px 10px}
 details.toc .tl button{text-align:left;background:none;border:0;border-radius:var(--r-sm);padding:9px 10px;min-height:40px;font:inherit;font-size:15px;color:var(--link);cursor:pointer}
 details.toc .tl button:hover{background:var(--tone)}
+details.toc .tl button small{display:block;font-size:13px;color:var(--muted);font-weight:400;margin-top:2px}
 
 /* ===== 截圖工具（乖寶寶題目、HP 任務）===== */
 .qz-steps{padding-left:1.4em}.qz-steps li{margin:.3em 0}
@@ -571,7 +572,11 @@ function addToc(d){
  const det=document.createElement('details');det.className='toc';if(innerWidth>820)det.open=true;
  det.innerHTML='<summary>本頁目錄（'+hs.length+' 段）</summary><div class="tl"></div>';
  const box=det.querySelector('.tl');
- hs.forEach(h=>{const b=document.createElement('button');b.type='button';b.textContent=h.textContent.trim();
+ hs.forEach(h=>{const b=document.createElement('button');b.type='button';
+  // 中文標題與英文副標（.en）分成兩行，避免接在一起
+  const en=h.querySelector('.en');
+  b.textContent=[...h.childNodes].filter(n=>!(n.nodeType===1&&n.classList.contains('en'))).map(n=>n.textContent).join('').trim()||h.textContent.trim();
+  if(en&&en.textContent.trim()){const sm=document.createElement('small');sm.textContent=en.textContent.trim();b.appendChild(sm);}
   b.onclick=()=>h.scrollIntoView({behavior:'smooth',block:'start'});box.appendChild(b);});
  const m=content.querySelector('.meta');if(m)m.insertAdjacentElement('afterend',det);}
 function show(slug){content.classList.remove('qz-done');const d=DATA.find(x=>x.slug===slug);if(!d){home();return;}
