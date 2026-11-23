@@ -10,6 +10,11 @@
   "cat": "新手入門"
  },
  {
+  "slug": "static-pc-setup",
+  "title": "遊戲電腦設定注意事項",
+  "cat": "新手入門"
+ },
+ {
   "slug": "static-exp-sets",
   "title": "lvl 10 升級所需經驗與 ETC 組數",
   "cat": "練功與升級"
@@ -147,6 +152,11 @@
  {
   "slug": "static-pinkbean-prep",
   "title": "皮卡啾（Pink Bean）前置與需求（官方公告中文整理）",
+  "cat": "BOSS 與副本"
+ },
+ {
+  "slug": "static-vl-lion-castle",
+  "title": "VL 獅子王城小教室",
   "cat": "BOSS 與副本"
  },
  {
