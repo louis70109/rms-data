@@ -270,6 +270,11 @@
   "cat": "裝備與生活"
  },
  {
+  "slug": "static-easter-2024",
+  "title": "復活節活動 2024（季節限定）",
+  "cat": "活動"
+ },
+ {
   "slug": "npc-gallery",
   "title": "NPC 圖鑑（攻略中出現的 NPC）",
   "cat": "查詢與工具"
