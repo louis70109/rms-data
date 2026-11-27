@@ -15,6 +15,11 @@
   "cat": "新手入門"
  },
  {
+  "slug": "static-home-v2",
+  "title": "遊戲地圖（首頁 v2）",
+  "cat": "新手入門"
+ },
+ {
   "slug": "static-exp-sets",
   "title": "lvl 10 升級所需經驗與 ETC 組數",
   "cat": "練功與升級"
@@ -160,6 +165,11 @@
   "cat": "BOSS 與副本"
  },
  {
+  "slug": "static-vl-lion-castle-v2",
+  "title": "獅子王城小教室（v2）",
+  "cat": "BOSS 與副本"
+ },
+ {
   "slug": "pre-zakum",
   "title": "殘暴炎魔（Zakum）前置",
   "cat": "BOSS 與副本"
@@ -272,6 +282,11 @@
  {
   "slug": "static-easter-2024",
   "title": "復活節活動 2024（季節限定）",
+  "cat": "活動"
+ },
+ {
+  "slug": "static-thanksgiving-2026",
+  "title": "感恩節活動 2026（季節限定）",
   "cat": "活動"
  },
  {
